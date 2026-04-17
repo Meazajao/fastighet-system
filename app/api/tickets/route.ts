@@ -24,7 +24,7 @@ export async function POST(req: Request) {
   const session = await auth();
   if (!session) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
 
-  const { title, description, category, priority } = await req.json();
+  const { title, description, category, priority, imageUrl } = await req.json();
 
   if (!title || !description || !category) {
     return NextResponse.json({ error: "Fyll i alla fält" }, { status: 400 });
@@ -36,6 +36,7 @@ export async function POST(req: Request) {
       description,
       category,
       priority,
+      imageUrl: imageUrl || null,
       userId: session.user.id,
     },
   });

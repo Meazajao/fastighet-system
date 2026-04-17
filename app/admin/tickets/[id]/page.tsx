@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import Chat from "@/components/chat/Chat";
+import StatusUpdater from "@/components/tickets/StatusUpdater";
+import TicketImage from "@/components/tickets/TicketImage";
 
 export default async function AdminTicketPage({
   params,
@@ -46,7 +48,6 @@ export default async function AdminTicketPage({
       </nav>
 
       <div className="max-w-2xl mx-auto px-6 py-10 space-y-6">
-        {/* Ticket-info */}
         <div className="bg-white rounded-2xl border border-gray-100 p-6">
           <div className="flex items-start justify-between mb-4">
             <div>
@@ -69,54 +70,19 @@ export default async function AdminTicketPage({
           <p className="text-gray-600 text-sm leading-relaxed mb-6">
             {ticket.description}
           </p>
-
-          {/* Statusuppdatering */}
+          {ticket.imageUrl && (
+  <div className="mt-4 mb-6">
+    <TicketImage path={ticket.imageUrl} />
+  </div>
+)}
           <StatusUpdater ticketId={ticket.id} currentStatus={ticket.status} />
         </div>
 
-        {/* Chatt */}
         <Chat
           ticketId={ticket.id}
           currentUserId={session.user.id}
           initialMessages={ticket.messages as any}
         />
-      </div>
-    </div>
-  );
-}
-
-function StatusUpdater({
-  ticketId,
-  currentStatus,
-}: {
-  ticketId: string;
-  currentStatus: string;
-}) {
-  const statuses = [
-    { value: "OPEN", label: "Öppen" },
-    { value: "IN_PROGRESS", label: "Pågående" },
-    { value: "RESOLVED", label: "Löst" },
-    { value: "CLOSED", label: "Stängd" },
-  ];
-
-  return (
-    <div className="border-t border-gray-100 pt-4">
-      <p className="text-sm font-medium text-gray-700 mb-3">Uppdatera status</p>
-      <div className="flex gap-2 flex-wrap">
-        {statuses.map((s) => (
-          <form key={s.value} action={`/api/tickets/${ticketId}`} method="PATCH">
-            <button
-              formAction={`/api/tickets/${ticketId}`}
-              className={`text-xs font-medium px-3 py-1.5 rounded-xl border transition ${
-                currentStatus === s.value
-                  ? "bg-violet-600 text-white border-violet-600"
-                  : "bg-white text-gray-600 border-gray-200 hover:border-violet-300"
-              }`}
-            >
-              {s.label}
-            </button>
-          </form>
-        ))}
       </div>
     </div>
   );

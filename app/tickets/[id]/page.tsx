@@ -3,6 +3,7 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import Chat from "@/components/chat/Chat";
+import TicketImage from "@/components/tickets/TicketImage";
 
 export default async function TicketPage({
   params,
@@ -61,8 +62,14 @@ export default async function TicketPage({
             <StatusBadge status={ticket.status} />
           </div>
           <p className="text-gray-600 text-sm leading-relaxed">
-            {ticket.description}
-          </p>
+  {ticket.description}
+</p>
+
+{ticket.imageUrl && (
+  <div className="mt-4">
+    <TicketImage path={ticket.imageUrl} />
+  </div>
+)}
         </div>
 
         <Chat

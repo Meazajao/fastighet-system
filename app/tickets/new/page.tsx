@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { supabase } from "@/lib/supabase";
 
 const CATEGORIES = [
   { value: "VVS", label: "VVS (vatten, avlopp)" },
@@ -29,26 +30,57 @@ export default function NewTicketPage() {
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("VVS");
   const [priority, setPriority] = useState("MEDIUM");
+  const [image, setImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+
+  function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setImage(file);
+    setImagePreview(URL.createObjectURL(file));
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError("");
-
+  
+    let imageUrl = null;
+  
+    if (image) {
+      const formData = new FormData();
+      formData.append("file", image);
+  
+      const uploadRes = await fetch("/api/storage/upload", {
+        method: "POST",
+        body: formData,
+      });
+  
+      const uploadData = await uploadRes.json();
+  
+      if (!uploadRes.ok) {
+        setError(uploadData.error || "Kunde inte ladda upp bilden");
+        setLoading(false);
+        return;
+      }
+  
+      imageUrl = uploadData.path;
+    }
+  
     const res = await fetch("/api/tickets", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, description, category, priority }),
+      body: JSON.stringify({ title, description, category, priority, imageUrl }),
     });
-
+  
     const data = await res.json();
-
+  
     if (!res.ok) {
       setError(data.error || "Något gick fel");
       setLoading(false);
       return;
     }
-
+  
     router.push("/dashboard");
   }
 
@@ -139,6 +171,52 @@ export default function NewTicketPage() {
                 rows={5}
                 className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition resize-none"
               />
+            </div>
+
+            {/* Bilduppladdning */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">
+                Bifoga bild (valfritt)
+              </label>
+              <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center hover:border-violet-300 transition">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageChange}
+                  className="hidden"
+                  id="image-upload"
+                />
+                <label htmlFor="image-upload" className="cursor-pointer">
+                  {imagePreview ? (
+                    <img
+                      src={imagePreview}
+                      alt="Förhandsvisning"
+                      className="max-h-48 mx-auto rounded-lg object-cover"
+                    />
+                  ) : (
+                    <div>
+                      <p className="text-gray-400 text-sm">
+                        Klicka för att ladda upp en bild
+                      </p>
+                      <p className="text-gray-300 text-xs mt-1">
+                        PNG, JPG upp till 10MB
+                      </p>
+                    </div>
+                  )}
+                </label>
+              </div>
+              {imagePreview && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setImage(null);
+                    setImagePreview(null);
+                  }}
+                  className="text-xs text-red-500 hover:text-red-700 mt-2"
+                >
+                  Ta bort bild
+                </button>
+              )}
             </div>
 
             {error && (
