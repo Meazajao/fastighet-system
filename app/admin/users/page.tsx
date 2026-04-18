@@ -1,7 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
-import Link from "next/link";
+import Sidebar from "@/components/Sidebar";
+import { theme } from "@/lib/theme";
 
 export default async function AdminUsersPage() {
   const supabase = await createClient();
@@ -23,69 +24,84 @@ export default async function AdminUsersPage() {
   });
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-violet-600 rounded-lg" />
-          <span className="font-semibold text-gray-900">Fastighet</span>
-          <span className="text-xs bg-violet-100 text-violet-600 font-medium px-2 py-0.5 rounded-full">
-            Admin
-          </span>
-        </div>
-        <Link
-          href="/admin"
-          className="text-sm text-gray-500 hover:text-gray-900 transition"
-        >
-          ← Tillbaka
-        </Link>
-      </nav>
+    <div className="app-layout" style={{ display: "flex", minHeight: "100vh" }}>
+      <Sidebar role="ADMIN" name={dbUser.name} apartment={null} />
 
-      <div className="max-w-4xl mx-auto px-6 py-10">
-        <div className="mb-8">
-          <h1 className="text-2xl font-semibold text-gray-900">Användare</h1>
-          <p className="text-gray-500 text-sm mt-1">
+      <main className="main-content" style={{ flex: 1, background: theme.colors.background, padding: "32px" }}>
+        <div style={{ marginBottom: "28px" }}>
+          <h1 style={{ fontSize: "24px", fontWeight: 600, color: theme.colors.textPrimary, margin: "0 0 4px", letterSpacing: "-0.5px" }}>
+            Användare
+          </h1>
+          <p style={{ fontSize: "13px", color: theme.colors.textMuted, margin: 0 }}>
             Alla registrerade hyresgäster
           </p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-            <h2 className="font-semibold text-gray-900">Alla användare</h2>
-            <span className="text-sm text-gray-400">{users.length} st</span>
+        <div style={{ background: theme.colors.card, border: "1px solid #e2e8f0", borderRadius: theme.borderRadius.lg, overflow: "hidden" }}>
+          <div style={{ padding: "16px 24px", borderBottom: "1px solid #f1f5f9", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <h2 style={{ fontSize: "14px", fontWeight: 600, color: theme.colors.textPrimary, margin: 0 }}>
+              Alla användare
+            </h2>
+            <span style={{ fontSize: "12px", color: theme.colors.textMuted }}>
+              {users.length} st
+            </span>
           </div>
 
-          <div className="divide-y divide-gray-50">
-            {users.map((user) => (
+          <div>
+            {users.map((user, index) => (
               <div
                 key={user.id}
-                className="flex items-center justify-between px-6 py-4"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  padding: "16px 24px",
+                  borderBottom: index < users.length - 1 ? "1px solid #f8fafc" : "none",
+                  flexWrap: "wrap",
+                  gap: "12px",
+                }}
               >
-                <div className="flex items-center gap-4">
-                  <div className="w-9 h-9 rounded-full bg-violet-100 flex items-center justify-center">
-                    <span className="text-sm font-medium text-violet-600">
+                <div style={{ display: "flex", alignItems: "center", gap: "14px" }}>
+                  <div
+                    style={{
+                      width: "36px",
+                      height: "36px",
+                      background: theme.colors.accentLight,
+                      border: `1px solid ${theme.colors.accentBorder}`,
+                      borderRadius: "50%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}
+                  >
+                    <span style={{ fontSize: "12px", fontWeight: 600, color: theme.colors.accent }}>
                       {user.name.charAt(0).toUpperCase()}
                     </span>
                   </div>
                   <div>
-                    <p className="font-medium text-gray-900 text-sm">
+                    <p style={{ fontSize: "14px", fontWeight: 500, color: theme.colors.textPrimary, margin: "0 0 2px" }}>
                       {user.name}
                     </p>
-                    <p className="text-xs text-gray-400">{user.email}</p>
-                    {user.apartment && (
-                      <p className="text-xs text-gray-400">{user.apartment}</p>
-                    )}
+                    <p style={{ fontSize: "12px", color: theme.colors.textMuted, margin: 0 }}>
+                      {user.email} {user.apartment ? `· ${user.apartment}` : ""}
+                    </p>
                   </div>
                 </div>
-                <div className="flex items-center gap-4">
-                  <span className="text-xs text-gray-400">
+
+                <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+                  <span style={{ fontSize: "12px", color: theme.colors.textMuted }}>
                     {user._count.tickets} ärenden
                   </span>
                   <span
-                    className={`text-xs font-medium px-2.5 py-1 rounded-full ${
-                      user.role === "ADMIN"
-                        ? "bg-violet-100 text-violet-600"
-                        : "bg-gray-100 text-gray-500"
-                    }`}
+                    style={{
+                      fontSize: "11px",
+                      fontWeight: 600,
+                      color: user.role === "ADMIN" ? theme.colors.accent : theme.colors.textMuted,
+                      background: user.role === "ADMIN" ? theme.colors.accentLight : "#f1f5f9",
+                      padding: "3px 10px",
+                      borderRadius: "20px",
+                    }}
                   >
                     {user.role === "ADMIN" ? "Admin" : "Hyresgäst"}
                   </span>
@@ -94,7 +110,7 @@ export default async function AdminUsersPage() {
             ))}
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
