@@ -2,10 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { theme } from "@/lib/theme";
 
 interface Ticket {
   id: string;
   title: string;
+  description: string;
   category: string;
   priority: string;
   status: string;
@@ -26,39 +28,65 @@ export default function TicketSearch({ tickets }: { tickets: Ticket[] }) {
       t.title.toLowerCase().includes(search.toLowerCase()) ||
       t.user.name.toLowerCase().includes(search.toLowerCase()) ||
       t.user.apartment?.toLowerCase().includes(search.toLowerCase());
-
     const matchStatus = statusFilter === "ALL" || t.status === statusFilter;
     const matchCategory = categoryFilter === "ALL" || t.category === categoryFilter;
-
     return matchSearch && matchStatus && matchCategory;
   });
 
+  const statusConfig: Record<string, { color: string; bg: string; label: string; border: string }> = {
+    OPEN: { color: theme.colors.accent, bg: theme.colors.accentLight, label: "Öppen", border: theme.colors.accent },
+    IN_PROGRESS: { color: "#7c3aed", bg: "#f5f3ff", label: "Pågående", border: "#7c3aed" },
+    RESOLVED: { color: theme.colors.success, bg: theme.colors.successLight, label: "Löst", border: theme.colors.success },
+    CLOSED: { color: theme.colors.textMuted, bg: "#f1f5f9", label: "Stängd", border: "#cbd5e1" },
+  };
+
+  const priorityConfig: Record<string, { color: string; bg: string; label: string }> = {
+    LOW: { color: theme.colors.textMuted, bg: "#f1f5f9", label: "Låg" },
+    MEDIUM: { color: theme.colors.accent, bg: theme.colors.accentLight, label: "Normal" },
+    HIGH: { color: theme.colors.warning, bg: theme.colors.warningLight, label: "Hög" },
+    URGENT: { color: theme.colors.danger, bg: theme.colors.dangerLight, label: "Akut" },
+  };
+
+  const selectStyle = {
+    padding: "10px 14px",
+    background: theme.colors.card,
+    border: "1px solid #e2e8f0",
+    borderRadius: theme.borderRadius.md,
+    fontSize: "13px",
+    color: theme.colors.textPrimary,
+    outline: "none",
+    cursor: "pointer",
+  };
+
   return (
     <div>
-      <div className="flex gap-3 mb-6 flex-wrap">
+      {/* Sök och filter */}
+      <div style={{ display: "flex", gap: "12px", marginBottom: "20px", flexWrap: "wrap" }}>
         <input
           type="text"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Sök på titel, namn eller lägenhet..."
-          className="flex-1 min-w-48 px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition"
+          style={{
+            flex: 1,
+            minWidth: "200px",
+            padding: "10px 14px",
+            background: theme.colors.card,
+            border: "1px solid #e2e8f0",
+            borderRadius: theme.borderRadius.md,
+            fontSize: "13px",
+            color: theme.colors.textPrimary,
+            outline: "none",
+          }}
         />
-        <select
-          value={statusFilter}
-          onChange={(e) => setStatusFilter(e.target.value)}
-          className="px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-violet-500 bg-white transition"
-        >
+        <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)} style={selectStyle}>
           <option value="ALL">Alla statusar</option>
           <option value="OPEN">Öppen</option>
           <option value="IN_PROGRESS">Pågående</option>
           <option value="RESOLVED">Löst</option>
           <option value="CLOSED">Stängd</option>
         </select>
-        <select
-          value={categoryFilter}
-          onChange={(e) => setCategoryFilter(e.target.value)}
-          className="px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-violet-500 bg-white transition"
-        >
+        <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} style={selectStyle}>
           <option value="ALL">Alla kategorier</option>
           <option value="VVS">VVS</option>
           <option value="EL">El</option>
@@ -70,81 +98,137 @@ export default function TicketSearch({ tickets }: { tickets: Ticket[] }) {
         </select>
       </div>
 
-      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-        <div className="px-6 py-4 border-b border-gray-100 flex items-center justify-between">
-          <h2 className="font-semibold text-gray-900">Ärenden</h2>
-          <span className="text-sm text-gray-400">{filtered.length} st</span>
-        </div>
+      {/* Räknare */}
+      <p style={{ fontSize: "12px", color: theme.colors.textMuted, margin: "0 0 12px" }}>
+        {filtered.length} ärenden
+      </p>
 
-        {filtered.length === 0 ? (
-          <div className="p-12 text-center">
-            <p className="text-gray-400 text-sm">Inga ärenden hittades</p>
-          </div>
-        ) : (
-          <div className="divide-y divide-gray-50">
-            {filtered.map((ticket) => (
+      {/* Lista */}
+      {filtered.length === 0 ? (
+        <div style={{ background: theme.colors.card, border: "1px solid #e2e8f0", borderRadius: theme.borderRadius.lg, padding: "64px", textAlign: "center" }}>
+          <p style={{ fontSize: "14px", color: theme.colors.textMuted, margin: 0 }}>Inga ärenden hittades</p>
+        </div>
+      ) : (
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          {filtered.map((ticket) => {
+            const status = statusConfig[ticket.status] || statusConfig.OPEN;
+            const priority = priorityConfig[ticket.priority] || priorityConfig.MEDIUM;
+            return (
               <Link
                 key={ticket.id}
                 href={`/admin/tickets/${ticket.id}`}
-                className="flex items-center justify-between px-6 py-4 hover:bg-gray-50 transition"
+                style={{
+                  background: theme.colors.card,
+                  border: "1px solid #e2e8f0",
+                  borderLeft: `4px solid ${status.border}`,
+                  borderRadius: theme.borderRadius.lg,
+                  borderTopLeftRadius: "0",
+                  borderBottomLeftRadius: "0",
+                  padding: "18px 24px",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  textDecoration: "none",
+                  gap: "16px",
+                }}
               >
-                <div>
-                  <div className="flex items-center gap-2 mb-0.5">
-                    <span className="text-xs font-medium text-gray-400 uppercase">
+                {/* Vänster — info */}
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  {/* Badges rad */}
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "8px", flexWrap: "wrap" }}>
+                    <span style={{
+                      fontSize: "10px",
+                      fontWeight: 600,
+                      color: "#475569",
+                      background: "#f1f5f9",
+                      padding: "3px 8px",
+                      borderRadius: "4px",
+                      textTransform: "uppercase",
+                      letterSpacing: "0.06em",
+                    }}>
                       {ticket.category}
                     </span>
-                    <PriorityBadge priority={ticket.priority} />
+                    <span style={{
+                      fontSize: "10px",
+                      fontWeight: 600,
+                      color: priority.color,
+                      background: priority.bg,
+                      padding: "3px 8px",
+                      borderRadius: "4px",
+                    }}>
+                      {priority.label}
+                    </span>
+                    <span style={{ fontSize: "11px", color: theme.colors.textMuted }}>
+                      {new Date(ticket.createdAt).toLocaleDateString("sv-SE")}
+                    </span>
                   </div>
-                  <p className="font-medium text-gray-900">{ticket.title}</p>
-                  <p className="text-xs text-gray-400 mt-0.5">
-                    {ticket.user.name} ·{" "}
-                    {ticket.user.apartment || "Ingen lägenhet"} ·{" "}
-                    {new Date(ticket.createdAt).toLocaleDateString("sv-SE")}
+
+                  {/* Titel */}
+                  <p style={{
+                    fontSize: "15px",
+                    fontWeight: 600,
+                    color: theme.colors.textPrimary,
+                    margin: "0 0 6px",
+                    letterSpacing: "-0.2px",
+                  }}>
+                    {ticket.title}
                   </p>
+
+                  {/* Beskrivning */}
+                  <p style={{
+                    fontSize: "12px",
+                    color: theme.colors.textSecondary,
+                    margin: "0 0 8px",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap",
+                    maxWidth: "500px",
+                  }}>
+                    {ticket.description}
+                  </p>
+
+                  {/* Hyresgäst */}
+                  <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <div style={{
+                      width: "20px",
+                      height: "20px",
+                      background: theme.colors.accentLight,
+                      border: `1px solid ${theme.colors.accentBorder}`,
+                      borderRadius: "50%",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      flexShrink: 0,
+                    }}>
+                      <span style={{ fontSize: "9px", fontWeight: 600, color: theme.colors.accent }}>
+                        {ticket.user.name.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <span style={{ fontSize: "12px", color: theme.colors.textMuted }}>
+                      {ticket.user.name}
+                      {ticket.user.apartment ? ` · ${ticket.user.apartment}` : ""}
+                    </span>
+                  </div>
                 </div>
-                <StatusBadge status={ticket.status} />
+
+                {/* Höger — status */}
+                <span style={{
+                  fontSize: "11px",
+                  fontWeight: 600,
+                  color: status.color,
+                  background: status.bg,
+                  padding: "5px 14px",
+                  borderRadius: "20px",
+                  whiteSpace: "nowrap",
+                  flexShrink: 0,
+                }}>
+                  {status.label}
+                </span>
               </Link>
-            ))}
-          </div>
-        )}
-      </div>
+            );
+          })}
+        </div>
+      )}
     </div>
-  );
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    OPEN: "bg-blue-50 text-blue-600",
-    IN_PROGRESS: "bg-violet-50 text-violet-600",
-    RESOLVED: "bg-green-50 text-green-600",
-    CLOSED: "bg-gray-100 text-gray-500",
-  };
-  const labels: Record<string, string> = {
-    OPEN: "Öppen",
-    IN_PROGRESS: "Pågående",
-    RESOLVED: "Löst",
-    CLOSED: "Stängd",
-  };
-  return (
-    <span className={`text-xs font-medium px-3 py-1 rounded-full ${styles[status]}`}>
-      {labels[status]}
-    </span>
-  );
-}
-
-function PriorityBadge({ priority }: { priority: string }) {
-  if (priority !== "URGENT" && priority !== "HIGH") return null;
-  const styles: Record<string, string> = {
-    URGENT: "bg-red-50 text-red-500",
-    HIGH: "bg-orange-50 text-orange-500",
-  };
-  const labels: Record<string, string> = {
-    URGENT: "Akut",
-    HIGH: "Hög",
-  };
-  return (
-    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${styles[priority]}`}>
-      {labels[priority]}
-    </span>
   );
 }

@@ -1,12 +1,21 @@
-import { auth } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
-import Link from "next/link";
+import Sidebar from "@/components/Sidebar";
 import TicketSearch from "@/components/tickets/TicketSearch";
+import { theme } from "@/lib/theme";
 
 export default async function AdminPage() {
-  const session = await auth();
-  if (session?.user?.role !== "ADMIN") redirect("/dashboard");
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) redirect("/login");
+
+  const dbUser = await prisma.user.findUnique({
+    where: { email: user.email! },
+  });
+
+  if (dbUser?.role !== "ADMIN") redirect("/dashboard");
 
   const tickets = await prisma.ticket.findMany({
     include: { user: true },
@@ -15,64 +24,50 @@ export default async function AdminPage() {
 
   const open = tickets.filter((t) => t.status === "OPEN").length;
   const inProgress = tickets.filter((t) => t.status === "IN_PROGRESS").length;
-  const resolved = tickets.filter((t) => t.status === "RESOLVED").length;
   const urgent = tickets.filter((t) => t.priority === "URGENT").length;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-violet-600 rounded-lg" />
-          <span className="font-semibold text-gray-900">Fastighet</span>
-          <span className="text-xs bg-violet-100 text-violet-600 font-medium px-2 py-0.5 rounded-full">
-            Admin
-          </span>
-        </div>
-        <div className="flex items-center gap-4">
-          <Link
-            href="/admin/users"
-            className="text-sm text-gray-500 hover:text-gray-900 transition"
-          >
-            Användare
-          </Link>
-          <Link
-            href="/api/auth/signout"
-            className="text-sm text-gray-500 hover:text-gray-900 transition"
-          >
-            Logga ut
-          </Link>
-        </div>
-      </nav>
+    <div className="app-layout" style={{ display: "flex", minHeight: "100vh" }}>
+      <Sidebar role="ADMIN" name={dbUser.name} apartment={null} />
 
-      <div className="max-w-6xl mx-auto px-6 py-10">
-        <div className="mb-8">
-          <h1 className="text-2xl font-semibold text-gray-900">Översikt</h1>
-          <p className="text-gray-500 text-sm mt-1">
+      <main className="main-content" style={{ flex: 1, background: theme.colors.background, padding: "32px" }}>
+        <div style={{ marginBottom: "28px" }}>
+          <h1 style={{ fontSize: "24px", fontWeight: 600, color: theme.colors.textPrimary, margin: "0 0 4px", letterSpacing: "-0.5px" }}>
+            Översikt
+          </h1>
+          <p style={{ fontSize: "13px", color: theme.colors.textMuted, margin: 0 }}>
             Alla inkomna ärenden från hyresgäster
           </p>
         </div>
 
-        <div className="grid grid-cols-4 gap-4 mb-8">
-          <div className="bg-white rounded-2xl border border-gray-100 p-5">
-            <p className="text-sm text-gray-500 mb-1">Totalt</p>
-            <p className="text-3xl font-semibold text-gray-900">{tickets.length}</p>
-          </div>
-          <div className="bg-white rounded-2xl border border-gray-100 p-5">
-            <p className="text-sm text-gray-500 mb-1">Öppna</p>
-            <p className="text-3xl font-semibold text-blue-600">{open}</p>
-          </div>
-          <div className="bg-white rounded-2xl border border-gray-100 p-5">
-            <p className="text-sm text-gray-500 mb-1">Pågående</p>
-            <p className="text-3xl font-semibold text-violet-600">{inProgress}</p>
-          </div>
-          <div className="bg-white rounded-2xl border border-gray-100 p-5">
-            <p className="text-sm text-gray-500 mb-1">Akuta</p>
-            <p className="text-3xl font-semibold text-red-500">{urgent}</p>
-          </div>
+        <div className="stats-grid-4" style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "16px", marginBottom: "28px" }}>
+          {[
+            { label: "Totalt", value: tickets.length, color: theme.colors.textPrimary },
+            { label: "Öppna", value: open, color: theme.colors.accent },
+            { label: "Pågående", value: inProgress, color: "#7c3aed" },
+            { label: "Akuta", value: urgent, color: theme.colors.warning },
+          ].map((stat) => (
+            <div
+              key={stat.label}
+              style={{
+                background: theme.colors.card,
+                border: "1px solid #e2e8f0",
+                borderRadius: theme.borderRadius.lg,
+                padding: "20px",
+              }}
+            >
+              <p style={{ fontSize: "11px", color: theme.colors.textMuted, margin: "0 0 8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                {stat.label}
+              </p>
+              <p style={{ fontSize: "32px", fontWeight: 600, color: stat.color, margin: 0, letterSpacing: "-1px" }}>
+                {stat.value}
+              </p>
+            </div>
+          ))}
         </div>
 
         <TicketSearch tickets={tickets} />
-      </div>
+      </main>
     </div>
   );
 }

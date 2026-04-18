@@ -1,248 +1,39 @@
-"use client";
+import { createClient } from "@/lib/supabase/server";
+import { prisma } from "@/lib/prisma";
+import { redirect } from "next/navigation";
+import Sidebar from "@/components/Sidebar";
+import NewTicketForm from "./NewTicketForm";
+import { theme } from "@/lib/theme";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { supabase } from "@/lib/supabase";
+export default async function NewTicketPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
-const CATEGORIES = [
-  { value: "VVS", label: "VVS (vatten, avlopp)" },
-  { value: "EL", label: "El" },
-  { value: "VENTILATION", label: "Ventilation" },
-  { value: "HISS", label: "Hiss" },
-  { value: "LAUNDRY", label: "Tvättstuga" },
-  { value: "EXTERIOR", label: "Yttre miljö" },
-  { value: "OTHER", label: "Övrigt" },
-];
+  if (!user) redirect("/login");
 
-const PRIORITIES = [
-  { value: "LOW", label: "Låg" },
-  { value: "MEDIUM", label: "Normal" },
-  { value: "HIGH", label: "Hög" },
-  { value: "URGENT", label: "Akut" },
-];
+  const dbUser = await prisma.user.findUnique({
+    where: { email: user.email! },
+  });
 
-export default function NewTicketPage() {
-  const router = useRouter();
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("VVS");
-  const [priority, setPriority] = useState("MEDIUM");
-  const [image, setImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
-
-  function handleImageChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setImage(file);
-    setImagePreview(URL.createObjectURL(file));
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-  
-    let imageUrl = null;
-  
-    if (image) {
-      const formData = new FormData();
-      formData.append("file", image);
-  
-      const uploadRes = await fetch("/api/storage/upload", {
-        method: "POST",
-        body: formData,
-      });
-  
-      const uploadData = await uploadRes.json();
-  
-      if (!uploadRes.ok) {
-        setError(uploadData.error || "Kunde inte ladda upp bilden");
-        setLoading(false);
-        return;
-      }
-  
-      imageUrl = uploadData.path;
-    }
-  
-    const res = await fetch("/api/tickets", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, description, category, priority, imageUrl }),
-    });
-  
-    const data = await res.json();
-  
-    if (!res.ok) {
-      setError(data.error || "Något gick fel");
-      setLoading(false);
-      return;
-    }
-  
-    router.push("/dashboard");
-  }
+  if (!dbUser) redirect("/login");
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-violet-600 rounded-lg" />
-          <span className="font-semibold text-gray-900">Fastighet</span>
+    <div className="app-layout" style={{ display: "flex", minHeight: "100vh" }}>
+      <Sidebar role="TENANT" name={dbUser.name} apartment={dbUser.apartment} />
+
+      <main className="main-content" style={{ flex: 1, background: theme.colors.background, padding: "32px" }}>
+        <div style={{ maxWidth: "720px" }}>
+          <div style={{ marginBottom: "24px" }}>
+            <h1 style={{ fontSize: "24px", fontWeight: 600, color: theme.colors.textPrimary, margin: "0 0 4px", letterSpacing: "-0.5px" }}>
+              Nytt ärende
+            </h1>
+            <p style={{ fontSize: "13px", color: theme.colors.textMuted, margin: 0 }}>
+              Beskriv felet så detaljerat som möjligt
+            </p>
+          </div>
+          <NewTicketForm />
         </div>
-        <Link
-          href="/dashboard"
-          className="text-sm text-gray-500 hover:text-gray-900 transition"
-        >
-          ← Tillbaka
-        </Link>
-      </nav>
-
-      <div className="max-w-2xl mx-auto px-6 py-10">
-        <div className="mb-8">
-          <h1 className="text-2xl font-semibold text-gray-900">Nytt ärende</h1>
-          <p className="text-gray-500 text-sm mt-1">
-            Beskriv felet så detaljerat som möjligt
-          </p>
-        </div>
-
-        <div className="bg-white rounded-2xl border border-gray-100 p-8">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Rubrik
-              </label>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="t.ex. Läckande kran i badrummet"
-                required
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition"
-              />
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Kategori
-                </label>
-                <select
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition bg-white"
-                >
-                  {CATEGORIES.map((c) => (
-                    <option key={c.value} value={c.value}>
-                      {c.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                  Prioritet
-                </label>
-                <select
-                  value={priority}
-                  onChange={(e) => setPriority(e.target.value)}
-                  className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition bg-white"
-                >
-                  {PRIORITIES.map((p) => (
-                    <option key={p.value} value={p.value}>
-                      {p.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Beskrivning
-              </label>
-              <textarea
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                placeholder="Beskriv problemet så detaljerat som möjligt..."
-                required
-                rows={5}
-                className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition resize-none"
-              />
-            </div>
-
-            {/* Bilduppladdning */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">
-                Bifoga bild (valfritt)
-              </label>
-              <div className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center hover:border-violet-300 transition">
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleImageChange}
-                  className="hidden"
-                  id="image-upload"
-                />
-                <label htmlFor="image-upload" className="cursor-pointer">
-                  {imagePreview ? (
-                    <img
-                      src={imagePreview}
-                      alt="Förhandsvisning"
-                      className="max-h-48 mx-auto rounded-lg object-cover"
-                    />
-                  ) : (
-                    <div>
-                      <p className="text-gray-400 text-sm">
-                        Klicka för att ladda upp en bild
-                      </p>
-                      <p className="text-gray-300 text-xs mt-1">
-                        PNG, JPG upp till 10MB
-                      </p>
-                    </div>
-                  )}
-                </label>
-              </div>
-              {imagePreview && (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setImage(null);
-                    setImagePreview(null);
-                  }}
-                  className="text-xs text-red-500 hover:text-red-700 mt-2"
-                >
-                  Ta bort bild
-                </button>
-              )}
-            </div>
-
-            {error && (
-              <div className="bg-red-50 text-red-600 text-sm px-4 py-3 rounded-xl">
-                {error}
-              </div>
-            )}
-
-            <div className="flex gap-3">
-              <Link
-                href="/dashboard"
-                className="flex-1 text-center border border-gray-200 text-gray-700 font-medium py-2.5 rounded-xl text-sm hover:bg-gray-50 transition"
-              >
-                Avbryt
-              </Link>
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex-1 bg-violet-600 hover:bg-violet-700 text-white font-medium py-2.5 rounded-xl text-sm transition disabled:opacity-50"
-              >
-                {loading ? "Skickar..." : "Skicka ärende"}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
+      </main>
     </div>
   );
 }
