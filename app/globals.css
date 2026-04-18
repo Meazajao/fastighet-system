@@ -1,26 +1,117 @@
-@import "tailwindcss";
-
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+*{
+  box-sizing: border-box;
+  margin: 0;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+
+/* Responsiv layout */
+@media (max-width: 768px) {
+  .app-layout {
+    flex-direction: column !important;
+  }
+
+  .sidebar {
+    width: 100% !important;
+    min-height: auto !important;
+    height: auto !important;
+    position: relative !important;
+    flex-direction: row !important;
+    padding: 12px 16px !important;
+    align-items: center !important;
+  }
+
+  .sidebar-nav {
+    display: none !important;
+  }
+
+  .sidebar-user {
+    display: none !important;
+  }
+
+  .sidebar-section-label {
+    display: none !important;
+  }
+
+  .main-content {
+    padding: 20px 16px !important;
+  }
+
+  .stats-grid-3 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .stats-grid-4 {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .ticket-description {
+    display: none !important;
+  }
+
+  .form-grid-2 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .search-bar {
+    flex-direction: column !important;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@media (max-width: 480px) {
+  .stats-grid-4 {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-layout {
+    flex-direction: column !important;
+  }
+
+  .sidebar {
+    display: none !important;
+  }
+
+  .mobile-nav {
+    display: flex !important;
+  }
+
+  .mobile-menu {
+    display: block !important;
+  }
+
+  .main-content {
+    padding: 80px 16px 24px !important;
+  }
+
+  .stats-grid-3 {
+    grid-template-columns: 1fr 1fr 1fr !important;
+  }
+
+  .stats-grid-4 {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .ticket-description {
+    display: none !important;
+  }
+
+  .form-grid-2 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .search-bar {
+    flex-direction: column !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid-3 {
+    grid-template-columns: 1fr !important;
+  }
+
+  .stats-grid-4 {
+    grid-template-columns: 1fr !important;
+  }
 }
