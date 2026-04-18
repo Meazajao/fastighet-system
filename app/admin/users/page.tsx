@@ -5,6 +5,8 @@ import Sidebar from "@/components/Sidebar";
 import MobileNav from "@/components/MobileNav";
 import MobileTopbar from "@/components/MobileTopbar";
 import { theme } from "@/lib/theme";
+import type { Metadata } from "next";
+export const metadata: Metadata = { title: "Admin — Användare" };
 
 export default async function AdminUsersPage() {
   const supabase = await createClient();

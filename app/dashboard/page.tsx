@@ -5,7 +5,11 @@ import Link from "next/link";
 import Sidebar from "@/components/Sidebar";
 import MobileNav from "@/components/MobileNav";
 import MobileTopbar from "@/components/MobileTopbar";
+import EmptyState from "@/components/ui/EmptyState";
 import { theme } from "@/lib/theme";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Översikt" };
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -38,7 +42,7 @@ export default async function DashboardPage() {
       <main className="main-content" style={{ flex: 1, background: theme.colors.background, padding: "32px" }}>
         <div style={{ marginBottom: "28px" }}>
           <h1 style={{ fontSize: "24px", fontWeight: 600, color: theme.colors.textPrimary, margin: "0 0 4px", letterSpacing: "-0.5px" }}>
-            Hej, {dbUser.name.split(" ")[0]} 👋
+            Hej, {dbUser.name.split(" ")[0]}
           </h1>
           <p style={{ fontSize: "13px", color: theme.colors.textMuted, margin: 0 }}>
             {dbUser.apartment || "Ingen lägenhet angiven"}
@@ -55,7 +59,7 @@ export default async function DashboardPage() {
               key={stat.label}
               style={{
                 background: theme.colors.card,
-                border: "1px solid #e2e8f0",
+                border: `1px solid ${theme.colors.border}`,
                 borderRadius: theme.borderRadius.lg,
                 padding: "16px 12px",
               }}
@@ -91,12 +95,12 @@ export default async function DashboardPage() {
         </div>
 
         {tickets.length === 0 ? (
-          <div style={{ background: theme.colors.card, border: "1px solid #e2e8f0", borderRadius: theme.borderRadius.lg, padding: "48px", textAlign: "center" }}>
-            <p style={{ color: theme.colors.textMuted, fontSize: "14px", margin: "0 0 8px" }}>Inga ärenden ännu</p>
-            <Link href="/tickets/new" style={{ color: theme.colors.accent, fontSize: "13px", fontWeight: 600 }}>
-              Skapa ditt första ärende
-            </Link>
-          </div>
+          <EmptyState
+            icon="inbox"
+            title="Inga ärenden ännu"
+            description="Du har inte skapat några ärenden. Klicka på knappen nedan för att anmäla ett fel eller en skada."
+            action={{ label: "+ Skapa nytt ärende", href: "/tickets/new" }}
+          />
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             {tickets.map((ticket) => (
@@ -105,7 +109,7 @@ export default async function DashboardPage() {
                 href={`/tickets/${ticket.id}`}
                 style={{
                   background: theme.colors.card,
-                  border: "1px solid #e2e8f0",
+                  border: `1px solid ${theme.colors.border}`,
                   borderLeft: `4px solid ${
                     ticket.status === "OPEN" ? theme.colors.accent :
                     ticket.status === "IN_PROGRESS" ? "#7c3aed" :

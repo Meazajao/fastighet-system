@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { toast } from "sonner";
 import { theme } from "@/lib/theme";
 
 const STATUSES = [
@@ -32,7 +33,10 @@ export default function StatusUpdater({
 
     if (res.ok) {
       setStatus(newStatus);
+      toast.success("Status uppdaterad");
       router.refresh();
+    } else {
+      toast.error("Kunde inte uppdatera status");
     }
     setLoading(false);
   }

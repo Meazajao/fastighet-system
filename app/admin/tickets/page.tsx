@@ -6,6 +6,8 @@ import MobileNav from "@/components/MobileNav";
 import MobileTopbar from "@/components/MobileTopbar";
 import TicketSearch from "@/components/tickets/TicketSearch";
 import { theme } from "@/lib/theme";
+import type { Metadata } from "next";
+export const metadata: Metadata = { title: "Admin — Alla ärenden" };
 
 export default async function AdminTicketsPage() {
   const supabase = await createClient();

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
 import { theme } from "@/lib/theme";
+import { getInitials } from "@/lib/utils";
 
 interface SidebarProps {
   role: "TENANT" | "ADMIN";
@@ -28,7 +29,7 @@ export default function Sidebar({ role, name, apartment }: SidebarProps) {
   ];
 
   const links = role === "ADMIN" ? adminLinks : tenantLinks;
-  const initials = name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+  const initials = getInitials(name);
 
   return (
     <>

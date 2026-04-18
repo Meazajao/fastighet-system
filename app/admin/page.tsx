@@ -5,7 +5,10 @@ import Sidebar from "@/components/Sidebar";
 import MobileNav from "@/components/MobileNav";
 import MobileTopbar from "@/components/MobileTopbar";
 import TicketSearch from "@/components/tickets/TicketSearch";
+import AdminNotifications from "@/components/AdminNotifications";
 import { theme } from "@/lib/theme";
+import type { Metadata } from "next";
+export const metadata: Metadata = { title: "Admin — Översikt" };
 
 export default async function AdminPage() {
   const supabase = await createClient();
@@ -33,6 +36,7 @@ export default async function AdminPage() {
       <Sidebar role="ADMIN" name={dbUser.name} apartment={null} />
       <MobileTopbar title="Översikt" name={dbUser.name} />
       <MobileNav role="ADMIN" />
+      <AdminNotifications />
 
       <main className="main-content" style={{ flex: 1, background: theme.colors.background, padding: "32px" }}>
         <div style={{ marginBottom: "28px" }}>
