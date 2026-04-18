@@ -1,12 +1,23 @@
-import { auth } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
+import { redirect } from "next/navigation";
 import Link from "next/link";
 
 export default async function DashboardPage() {
-  const session = await auth();
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) redirect("/login");
+
+  const dbUser = await prisma.user.findUnique({
+    where: { email: user.email! },
+  });
+
+  if (!dbUser) redirect("/login");
+  if (dbUser.role === "ADMIN") redirect("/admin");
 
   const tickets = await prisma.ticket.findMany({
-    where: { userId: session?.user?.id },
+    where: { userId: dbUser.id },
     orderBy: { createdAt: "desc" },
   });
 
@@ -22,7 +33,7 @@ export default async function DashboardPage() {
           <span className="font-semibold text-gray-900">Fastighet</span>
         </div>
         <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-500">{session?.user?.name}</span>
+          <span className="text-sm text-gray-500">{dbUser.name}</span>
           <Link
             href="/api/auth/signout"
             className="text-sm text-gray-500 hover:text-gray-900 transition"
@@ -35,10 +46,10 @@ export default async function DashboardPage() {
       <div className="max-w-4xl mx-auto px-6 py-10">
         <div className="mb-8">
           <h1 className="text-2xl font-semibold text-gray-900">
-            Hej, {session?.user?.name?.split(" ")[0]} 👋
+            Hej, {dbUser.name.split(" ")[0]} 👋
           </h1>
           <p className="text-gray-500 text-sm mt-1">
-            {session?.user?.apartment || "Ingen lägenhet angiven"}
+            {dbUser.apartment || "Ingen lägenhet angiven"}
           </p>
         </div>
 
@@ -83,7 +94,7 @@ export default async function DashboardPage() {
               <Link
                 key={ticket.id}
                 href={`/tickets/${ticket.id}`}
-                className="bg-white rounded-2xl border border-gray-100 p-5 flex items-center justify-between hover:border-violet-200 transition"
+                className="bg-white rounded-2xl border border-gray-100 p-5 flex items-center justify-between hover:border-violet-200 transition block"
               >
                 <div>
                   <div className="flex items-center gap-2 mb-1">

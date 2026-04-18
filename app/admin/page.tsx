@@ -1,12 +1,20 @@
-import { auth } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import TicketSearch from "@/components/tickets/TicketSearch";
 
 export default async function AdminPage() {
-  const session = await auth();
-  if (session?.user?.role !== "ADMIN") redirect("/dashboard");
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) redirect("/login");
+
+  const dbUser = await prisma.user.findUnique({
+    where: { email: user.email! },
+  });
+
+  if (dbUser?.role !== "ADMIN") redirect("/dashboard");
 
   const tickets = await prisma.ticket.findMany({
     include: { user: true },
@@ -15,7 +23,6 @@ export default async function AdminPage() {
 
   const open = tickets.filter((t) => t.status === "OPEN").length;
   const inProgress = tickets.filter((t) => t.status === "IN_PROGRESS").length;
-  const resolved = tickets.filter((t) => t.status === "RESOLVED").length;
   const urgent = tickets.filter((t) => t.priority === "URGENT").length;
 
   return (

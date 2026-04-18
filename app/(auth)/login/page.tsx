@@ -1,9 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { createClient } from "@/lib/supabase/client";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -17,27 +17,26 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
 
-    const result = await signIn("credentials", {
+    const supabase = createClient();
+
+    const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
-      redirect: false,
     });
 
-    if (result?.error) {
+    if (error) {
       setError("Felaktigt e-post eller lösenord");
       setLoading(false);
       return;
     }
 
-    router.push("/dashboard");
     router.refresh();
+    router.push("/dashboard");
   }
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 w-full max-w-md p-8">
-        
-        {/* Logo */}
         <div className="mb-8">
           <div className="w-10 h-10 bg-violet-600 rounded-xl mb-4" />
           <h1 className="text-2xl font-semibold text-gray-900">Välkommen</h1>
@@ -46,7 +45,6 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Formulär */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
@@ -91,7 +89,6 @@ export default function LoginPage() {
           </button>
         </form>
 
-        {/* Registreringslänk */}
         <p className="text-center text-sm text-gray-500 mt-6">
           Inget konto?{" "}
           <Link href="/register" className="text-violet-600 font-medium hover:underline">

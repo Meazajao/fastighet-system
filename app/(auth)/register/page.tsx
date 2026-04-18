@@ -3,49 +3,60 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { supabase } from "@/lib/supabase";
 
 export default function RegisterPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [form, setForm] = useState({
-    name: "",
-    email: "",
-    password: "",
-    apartment: "",
-  });
-
-  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  }
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [apartment, setApartment] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setLoading(true);
     setError("");
 
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          name,
+          apartment,
+          role: "TENANT",
+        },
+      },
+    });
+
+    if (error) {
+      setError(error.message);
+      setLoading(false);
+      return;
+    }
+
     const res = await fetch("/api/auth/register", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      body: JSON.stringify({ name, email, apartment }),
     });
 
-    const data = await res.json();
-
     if (!res.ok) {
+      const data = await res.json();
       setError(data.error || "Något gick fel");
       setLoading(false);
       return;
     }
 
-    router.push("/login");
+    router.push("/dashboard");
+    router.refresh();
   }
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
       <div className="bg-white rounded-2xl shadow-sm border border-gray-100 w-full max-w-md p-8">
-
-        {/* Logo */}
         <div className="mb-8">
           <div className="w-10 h-10 bg-violet-600 rounded-xl mb-4" />
           <h1 className="text-2xl font-semibold text-gray-900">Skapa konto</h1>
@@ -54,17 +65,15 @@ export default function RegisterPage() {
           </p>
         </div>
 
-        {/* Formulär */}
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1.5">
               Namn
             </label>
             <input
-              name="name"
               type="text"
-              value={form.name}
-              onChange={handleChange}
+              value={name}
+              onChange={(e) => setName(e.target.value)}
               placeholder="Anna Lindqvist"
               required
               className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition"
@@ -76,10 +85,9 @@ export default function RegisterPage() {
               E-post
             </label>
             <input
-              name="email"
               type="email"
-              value={form.email}
-              onChange={handleChange}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
               placeholder="din@email.se"
               required
               className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition"
@@ -91,10 +99,9 @@ export default function RegisterPage() {
               Lösenord
             </label>
             <input
-              name="password"
               type="password"
-              value={form.password}
-              onChange={handleChange}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
               required
               className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition"
@@ -106,10 +113,9 @@ export default function RegisterPage() {
               Lägenhetsnummer
             </label>
             <input
-              name="apartment"
               type="text"
-              value={form.apartment}
-              onChange={handleChange}
+              value={apartment}
+              onChange={(e) => setApartment(e.target.value)}
               placeholder="Lgh 2B, Storgatan 12"
               className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition"
             />

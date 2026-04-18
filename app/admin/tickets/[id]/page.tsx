@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -11,8 +11,16 @@ export default async function AdminTicketPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const session = await auth();
-  if (session?.user?.role !== "ADMIN") redirect("/dashboard");
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) redirect("/login");
+
+  const dbUser = await prisma.user.findUnique({
+    where: { email: user.email! },
+  });
+
+  if (dbUser?.role !== "ADMIN") redirect("/dashboard");
 
   const { id } = await params;
 
@@ -71,16 +79,16 @@ export default async function AdminTicketPage({
             {ticket.description}
           </p>
           {ticket.imageUrl && (
-  <div className="mt-4 mb-6">
-    <TicketImage path={ticket.imageUrl} />
-  </div>
-)}
+            <div className="mt-4 mb-6">
+              <TicketImage path={ticket.imageUrl} />
+            </div>
+          )}
           <StatusUpdater ticketId={ticket.id} currentStatus={ticket.status} />
         </div>
 
         <Chat
           ticketId={ticket.id}
-          currentUserId={session.user.id}
+          currentUserId={dbUser.id}
           initialMessages={ticket.messages as any}
         />
       </div>

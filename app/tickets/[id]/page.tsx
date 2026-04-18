@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
@@ -10,8 +10,16 @@ export default async function TicketPage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  const session = await auth();
-  if (!session) redirect("/login");
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) redirect("/login");
+
+  const dbUser = await prisma.user.findUnique({
+    where: { email: user.email! },
+  });
+
+  if (!dbUser) redirect("/login");
 
   const { id } = await params;
 
@@ -62,19 +70,18 @@ export default async function TicketPage({
             <StatusBadge status={ticket.status} />
           </div>
           <p className="text-gray-600 text-sm leading-relaxed">
-  {ticket.description}
-</p>
-
-{ticket.imageUrl && (
-  <div className="mt-4">
-    <TicketImage path={ticket.imageUrl} />
-  </div>
-)}
+            {ticket.description}
+          </p>
+          {ticket.imageUrl && (
+            <div className="mt-4">
+              <TicketImage path={ticket.imageUrl} />
+            </div>
+          )}
         </div>
 
         <Chat
           ticketId={ticket.id}
-          currentUserId={session.user.id}
+          currentUserId={dbUser.id}
           initialMessages={ticket.messages as any}
         />
       </div>

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { sendNotificationEmail } from "@/lib/mail";
 
@@ -7,8 +7,12 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await auth();
-  if (!session) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
+
+  const dbUser = await prisma.user.findUnique({ where: { email: user.email! } });
+  if (!dbUser) return NextResponse.json({ error: "Ej hittad" }, { status: 404 });
 
   const { id } = await params;
   const { text } = await req.json();
@@ -19,20 +23,16 @@ export async function POST(
     data: {
       text,
       ticketId: id,
-      userId: session.user.id,
+      userId: dbUser.id,
     },
     include: { user: true },
   });
 
-  if (session.user.role === "ADMIN") {
-    console.log("Admin skickade meddelande — försöker skicka mail");
-    
+  if (dbUser.role === "ADMIN") {
     const ticket = await prisma.ticket.findUnique({
       where: { id },
       include: { user: true },
     });
-
-    console.log("Ticket user email:", ticket?.user?.email);
 
     if (ticket?.user?.email) {
       try {
@@ -43,7 +43,6 @@ export async function POST(
           ticketId: id,
           adminMessage: text,
         });
-        console.log("Mail skickat till:", ticket.user.email);
       } catch (err) {
         console.error("Mail kunde inte skickas:", err);
       }

@@ -1,19 +1,23 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 
 export async function GET() {
-  const session = await auth();
-  if (!session) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
+
+  const dbUser = await prisma.user.findUnique({ where: { email: user.email! } });
+  if (!dbUser) return NextResponse.json({ error: "Ej hittad" }, { status: 404 });
 
   const tickets =
-    session.user.role === "ADMIN"
+    dbUser.role === "ADMIN"
       ? await prisma.ticket.findMany({
           include: { user: true },
           orderBy: { createdAt: "desc" },
         })
       : await prisma.ticket.findMany({
-          where: { userId: session.user.id },
+          where: { userId: dbUser.id },
           orderBy: { createdAt: "desc" },
         });
 
@@ -21,8 +25,12 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const session = await auth();
-  if (!session) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
+
+  const dbUser = await prisma.user.findUnique({ where: { email: user.email! } });
+  if (!dbUser) return NextResponse.json({ error: "Ej hittad" }, { status: 404 });
 
   const { title, description, category, priority, imageUrl } = await req.json();
 
@@ -37,7 +45,7 @@ export async function POST(req: Request) {
       category,
       priority,
       imageUrl: imageUrl || null,
-      userId: session.user.id,
+      userId: dbUser.id,
     },
   });
 
