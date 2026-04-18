@@ -1,48 +1,41 @@
-*{
+* {
   box-sizing: border-box;
   margin: 0;
 }
 
+nextjs-portal {
+  display: none !important;
+}
 
-
-/* Responsiv layout */
 @media (max-width: 768px) {
   .app-layout {
     flex-direction: column !important;
   }
 
   .sidebar {
-    width: 100% !important;
-    min-height: auto !important;
-    height: auto !important;
-    position: relative !important;
-    flex-direction: row !important;
-    padding: 12px 16px !important;
-    align-items: center !important;
-  }
-
-  .sidebar-nav {
     display: none !important;
   }
 
-  .sidebar-user {
-    display: none !important;
+  .mobile-topbar {
+    display: flex !important;
   }
 
-  .sidebar-section-label {
-    display: none !important;
+  .mobile-bottom-nav {
+    display: grid !important;
   }
 
   .main-content {
-    padding: 20px 16px !important;
+    padding: 72px 16px 80px !important;
   }
 
   .stats-grid-3 {
-    grid-template-columns: 1fr !important;
+    grid-template-columns: 1fr 1fr 1fr !important;
+    gap: 8px !important;
   }
 
   .stats-grid-4 {
     grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
   }
 
   .ticket-description {
@@ -59,59 +52,11 @@
 }
 
 @media (max-width: 480px) {
-  .stats-grid-4 {
-    grid-template-columns: 1fr !important;
-  }
-}
-
-@media (max-width: 768px) {
-  .app-layout {
-    flex-direction: column !important;
-  }
-
-  .sidebar {
-    display: none !important;
-  }
-
-  .mobile-nav {
-    display: flex !important;
-  }
-
-  .mobile-menu {
-    display: block !important;
-  }
-
-  .main-content {
-    padding: 80px 16px 24px !important;
-  }
-
   .stats-grid-3 {
     grid-template-columns: 1fr 1fr 1fr !important;
   }
 
   .stats-grid-4 {
     grid-template-columns: 1fr 1fr !important;
-  }
-
-  .ticket-description {
-    display: none !important;
-  }
-
-  .form-grid-2 {
-    grid-template-columns: 1fr !important;
-  }
-
-  .search-bar {
-    flex-direction: column !important;
-  }
-}
-
-@media (max-width: 480px) {
-  .stats-grid-3 {
-    grid-template-columns: 1fr !important;
-  }
-
-  .stats-grid-4 {
-    grid-template-columns: 1fr !important;
   }
 }

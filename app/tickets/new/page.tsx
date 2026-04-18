@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
+import MobileNav from "@/components/MobileNav";
+import MobileTopbar from "@/components/MobileTopbar";
 import NewTicketForm from "./NewTicketForm";
 import { theme } from "@/lib/theme";
 
@@ -20,6 +22,8 @@ export default async function NewTicketPage() {
   return (
     <div className="app-layout" style={{ display: "flex", minHeight: "100vh" }}>
       <Sidebar role="TENANT" name={dbUser.name} apartment={dbUser.apartment} />
+      <MobileTopbar title="Nytt ärende" backHref="/tickets" name={dbUser.name} />
+      <MobileNav role="TENANT" />
 
       <main className="main-content" style={{ flex: 1, background: theme.colors.background, padding: "32px" }}>
         <div style={{ maxWidth: "720px" }}>

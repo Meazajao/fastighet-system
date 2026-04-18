@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
+import MobileNav from "@/components/MobileNav";
+import MobileTopbar from "@/components/MobileTopbar";
 import Chat from "@/components/chat/Chat";
 import StatusUpdater from "@/components/tickets/StatusUpdater";
 import TicketImage from "@/components/tickets/TicketImage";
@@ -58,21 +60,15 @@ export default async function AdminTicketPage({
   return (
     <div className="app-layout" style={{ display: "flex", minHeight: "100vh" }}>
       <Sidebar role="ADMIN" name={dbUser.name} apartment={null} />
+      <MobileTopbar title={ticket.title} backHref="/admin/tickets" name={dbUser.name} />
+      <MobileNav role="ADMIN" />
 
       <main className="main-content" style={{ flex: 1, background: theme.colors.background, padding: "32px" }}>
         <div style={{ maxWidth: "720px" }}>
-          <div
-            style={{
-              background: theme.colors.card,
-              border: "1px solid #e2e8f0",
-              borderRadius: theme.borderRadius.lg,
-              padding: "24px",
-              marginBottom: "20px",
-            }}
-          >
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "16px" }}>
-              <div>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+          <div style={{ background: theme.colors.card, border: "1px solid #e2e8f0", borderRadius: theme.borderRadius.lg, padding: "24px", marginBottom: "20px" }}>
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "16px", gap: "16px" }}>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px", flexWrap: "wrap" }}>
                   <span style={{ fontSize: "11px", color: theme.colors.textMuted, textTransform: "uppercase", letterSpacing: "0.05em" }}>
                     {ticket.category}
                   </span>
@@ -87,7 +83,7 @@ export default async function AdminTicketPage({
                   {ticket.user.name} · {ticket.user.apartment || "Ingen lägenhet"} · {new Date(ticket.createdAt).toLocaleDateString("sv-SE")}
                 </p>
               </div>
-              <span style={{ fontSize: "11px", fontWeight: 600, color: status.color, background: status.bg, padding: "4px 12px", borderRadius: "20px", whiteSpace: "nowrap" }}>
+              <span style={{ fontSize: "11px", fontWeight: 600, color: status.color, background: status.bg, padding: "4px 12px", borderRadius: "20px", whiteSpace: "nowrap", flexShrink: 0 }}>
                 {status.label}
               </span>
             </div>

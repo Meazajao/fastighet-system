@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
+import MobileNav from "@/components/MobileNav";
+import MobileTopbar from "@/components/MobileTopbar";
 import Chat from "@/components/chat/Chat";
 import TicketImage from "@/components/tickets/TicketImage";
 import { theme } from "@/lib/theme";
@@ -57,18 +59,12 @@ export default async function TicketPage({
   return (
     <div className="app-layout" style={{ display: "flex", minHeight: "100vh" }}>
       <Sidebar role="TENANT" name={dbUser.name} apartment={dbUser.apartment} />
+      <MobileTopbar title={ticket.title} backHref="/tickets" name={dbUser.name} />
+      <MobileNav role="TENANT" />
 
       <main className="main-content" style={{ flex: 1, background: theme.colors.background, padding: "32px" }}>
         <div style={{ maxWidth: "720px" }}>
-          <div
-            style={{
-              background: theme.colors.card,
-              border: "1px solid #e2e8f0",
-              borderRadius: theme.borderRadius.lg,
-              padding: "24px",
-              marginBottom: "20px",
-            }}
-          >
+          <div style={{ background: theme.colors.card, border: "1px solid #e2e8f0", borderRadius: theme.borderRadius.lg, padding: "24px", marginBottom: "20px" }}>
             <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "16px", gap: "16px" }}>
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px", flexWrap: "wrap" }}>

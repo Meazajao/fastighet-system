@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import Sidebar from "@/components/Sidebar";
+import MobileNav from "@/components/MobileNav";
+import MobileTopbar from "@/components/MobileTopbar";
 import { theme } from "@/lib/theme";
 
 export default async function DashboardPage() {
@@ -30,6 +32,8 @@ export default async function DashboardPage() {
   return (
     <div className="app-layout" style={{ display: "flex", minHeight: "100vh" }}>
       <Sidebar role="TENANT" name={dbUser.name} apartment={dbUser.apartment} />
+      <MobileTopbar title="Översikt" name={dbUser.name} />
+      <MobileNav role="TENANT" />
 
       <main className="main-content" style={{ flex: 1, background: theme.colors.background, padding: "32px" }}>
         <div style={{ marginBottom: "28px" }}>
@@ -53,13 +57,13 @@ export default async function DashboardPage() {
                 background: theme.colors.card,
                 border: "1px solid #e2e8f0",
                 borderRadius: theme.borderRadius.lg,
-                padding: "20px",
+                padding: "16px 12px",
               }}
             >
-              <p style={{ fontSize: "11px", color: theme.colors.textMuted, margin: "0 0 8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+              <p style={{ fontSize: "10px", color: theme.colors.textMuted, margin: "0 0 6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                 {stat.label}
               </p>
-              <p style={{ fontSize: "32px", fontWeight: 600, color: stat.color, margin: 0, letterSpacing: "-1px" }}>
+              <p style={{ fontSize: "28px", fontWeight: 600, color: stat.color, margin: 0, letterSpacing: "-1px" }}>
                 {stat.value}
               </p>
             </div>
@@ -87,15 +91,7 @@ export default async function DashboardPage() {
         </div>
 
         {tickets.length === 0 ? (
-          <div
-            style={{
-              background: theme.colors.card,
-              border: "1px solid #e2e8f0",
-              borderRadius: theme.borderRadius.lg,
-              padding: "48px",
-              textAlign: "center",
-            }}
-          >
+          <div style={{ background: theme.colors.card, border: "1px solid #e2e8f0", borderRadius: theme.borderRadius.lg, padding: "48px", textAlign: "center" }}>
             <p style={{ color: theme.colors.textMuted, fontSize: "14px", margin: "0 0 8px" }}>Inga ärenden ännu</p>
             <Link href="/tickets/new" style={{ color: theme.colors.accent, fontSize: "13px", fontWeight: 600 }}>
               Skapa ditt första ärende
@@ -110,7 +106,11 @@ export default async function DashboardPage() {
                 style={{
                   background: theme.colors.card,
                   border: "1px solid #e2e8f0",
-                  borderLeft: `4px solid ${ticket.status === "OPEN" ? theme.colors.accent : ticket.status === "IN_PROGRESS" ? "#7c3aed" : ticket.status === "RESOLVED" ? theme.colors.success : "#cbd5e1"}`,
+                  borderLeft: `4px solid ${
+                    ticket.status === "OPEN" ? theme.colors.accent :
+                    ticket.status === "IN_PROGRESS" ? "#7c3aed" :
+                    ticket.status === "RESOLVED" ? theme.colors.success : "#cbd5e1"
+                  }`,
                   borderRadius: theme.borderRadius.lg,
                   borderTopLeftRadius: "0",
                   borderBottomLeftRadius: "0",
@@ -119,20 +119,12 @@ export default async function DashboardPage() {
                   alignItems: "center",
                   justifyContent: "space-between",
                   textDecoration: "none",
+                  gap: "16px",
                 }}
               >
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px" }}>
-                    <span style={{
-                      fontSize: "10px",
-                      fontWeight: 600,
-                      color: "#475569",
-                      background: "#f1f5f9",
-                      padding: "2px 8px",
-                      borderRadius: "4px",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.06em",
-                    }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px", flexWrap: "wrap" }}>
+                    <span style={{ fontSize: "10px", fontWeight: 600, color: "#475569", background: "#f1f5f9", padding: "2px 8px", borderRadius: "4px", textTransform: "uppercase", letterSpacing: "0.06em" }}>
                       {ticket.category}
                     </span>
                     <span style={{ fontSize: "11px", color: theme.colors.textMuted }}>
@@ -142,15 +134,7 @@ export default async function DashboardPage() {
                   <p style={{ fontSize: "15px", fontWeight: 600, color: theme.colors.textPrimary, margin: "0 0 4px" }}>
                     {ticket.title}
                   </p>
-                  <p className="ticket-description" style={{
-                    fontSize: "12px",
-                    color: theme.colors.textSecondary,
-                    margin: 0,
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                    maxWidth: "500px",
-                  }}>
+                  <p className="ticket-description" style={{ fontSize: "12px", color: theme.colors.textSecondary, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {ticket.description}
                   </p>
                 </div>
@@ -173,19 +157,7 @@ function StatusBadge({ status }: { status: string }) {
   };
   const s = config[status] || config.CLOSED;
   return (
-    <span
-      style={{
-        fontSize: "11px",
-        fontWeight: 600,
-        color: s.color,
-        background: s.bg,
-        padding: "4px 12px",
-        borderRadius: "20px",
-        whiteSpace: "nowrap",
-        marginLeft: "16px",
-        flexShrink: 0,
-      }}
-    >
+    <span style={{ fontSize: "11px", fontWeight: 600, color: s.color, background: s.bg, padding: "4px 12px", borderRadius: "20px", whiteSpace: "nowrap", flexShrink: 0 }}>
       {s.label}
     </span>
   );
