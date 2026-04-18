@@ -6,6 +6,8 @@ import MobileNav from "@/components/MobileNav";
 import MobileTopbar from "@/components/MobileTopbar";
 import NewTicketForm from "./NewTicketForm";
 import { theme } from "@/lib/theme";
+import type { Metadata } from "next";
+export const metadata: Metadata = { title: "Nytt ärende" };
 
 export default async function NewTicketPage() {
   const supabase = await createClient();

@@ -4,8 +4,12 @@ import { redirect } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import MobileNav from "@/components/MobileNav";
 import MobileTopbar from "@/components/MobileTopbar";
+import EmptyState from "@/components/ui/EmptyState";
 import Link from "next/link";
 import { theme } from "@/lib/theme";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = { title: "Mina ärenden" };
 
 export default async function TicketsPage() {
   const supabase = await createClient();
@@ -54,18 +58,21 @@ export default async function TicketsPage() {
               {tickets.length} ärenden totalt
             </p>
           </div>
-          <Link href="/tickets/new" style={{ background: theme.colors.accent, color: "#fff", padding: "10px 18px", borderRadius: theme.borderRadius.md, fontSize: "13px", fontWeight: 600, textDecoration: "none" }}>
+          <Link
+            href="/tickets/new"
+            style={{ background: theme.colors.accent, color: "#fff", padding: "10px 18px", borderRadius: theme.borderRadius.md, fontSize: "13px", fontWeight: 600, textDecoration: "none" }}
+          >
             + Nytt ärende
           </Link>
         </div>
 
         {tickets.length === 0 ? (
-          <div style={{ background: theme.colors.card, border: "1px solid #e2e8f0", borderRadius: theme.borderRadius.lg, padding: "64px", textAlign: "center" }}>
-            <p style={{ fontSize: "15px", color: theme.colors.textMuted, margin: "0 0 8px" }}>Inga ärenden ännu</p>
-            <Link href="/tickets/new" style={{ color: theme.colors.accent, fontSize: "13px", fontWeight: 600 }}>
-              Skapa ditt första ärende →
-            </Link>
-          </div>
+          <EmptyState
+            icon="ticket"
+            title="Inga ärenden hittades"
+            description="Du har inga aktiva ärenden. Skapa ett nytt ärende för att rapportera ett fel eller en skada i din lägenhet."
+            action={{ label: "+ Nytt ärende", href: "/tickets/new" }}
+          />
         ) : (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
             {tickets.map((ticket) => {
@@ -77,7 +84,7 @@ export default async function TicketsPage() {
                   href={`/tickets/${ticket.id}`}
                   style={{
                     background: theme.colors.card,
-                    border: "1px solid #e2e8f0",
+                    border: `1px solid ${theme.colors.border}`,
                     borderLeft: `4px solid ${status.color}`,
                     borderRadius: theme.borderRadius.lg,
                     borderTopLeftRadius: "0",

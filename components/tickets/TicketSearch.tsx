@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import EmptyState from "@/components/ui/EmptyState";
 import { theme } from "@/lib/theme";
 
 interface Ticket {
@@ -50,7 +51,7 @@ export default function TicketSearch({ tickets }: { tickets: Ticket[] }) {
   const selectStyle = {
     padding: "10px 14px",
     background: theme.colors.card,
-    border: "1px solid #e2e8f0",
+    border: `1px solid ${theme.colors.border}`,
     borderRadius: theme.borderRadius.md,
     fontSize: "13px",
     color: theme.colors.textPrimary,
@@ -58,9 +59,10 @@ export default function TicketSearch({ tickets }: { tickets: Ticket[] }) {
     cursor: "pointer",
   };
 
+  const isFiltered = search || statusFilter !== "ALL" || categoryFilter !== "ALL";
+
   return (
     <div>
-      {/* Sök och filter */}
       <div style={{ display: "flex", gap: "12px", marginBottom: "20px", flexWrap: "wrap" }}>
         <input
           type="text"
@@ -72,7 +74,7 @@ export default function TicketSearch({ tickets }: { tickets: Ticket[] }) {
             minWidth: "200px",
             padding: "10px 14px",
             background: theme.colors.card,
-            border: "1px solid #e2e8f0",
+            border: `1px solid ${theme.colors.border}`,
             borderRadius: theme.borderRadius.md,
             fontSize: "13px",
             color: theme.colors.textPrimary,
@@ -96,18 +98,34 @@ export default function TicketSearch({ tickets }: { tickets: Ticket[] }) {
           <option value="EXTERIOR">Yttre miljö</option>
           <option value="OTHER">Övrigt</option>
         </select>
+        {isFiltered && (
+          <button
+            onClick={() => { setSearch(""); setStatusFilter("ALL"); setCategoryFilter("ALL"); }}
+            style={{ padding: "10px 14px", background: "transparent", border: `1px solid ${theme.colors.border}`, borderRadius: theme.borderRadius.md, fontSize: "13px", color: theme.colors.textMuted, cursor: "pointer" }}
+          >
+            Rensa filter
+          </button>
+        )}
       </div>
 
-      {/* Räknare */}
       <p style={{ fontSize: "12px", color: theme.colors.textMuted, margin: "0 0 12px" }}>
-        {filtered.length} ärenden
+        {filtered.length} {filtered.length === 1 ? "ärende" : "ärenden"}
       </p>
 
-      {/* Lista */}
       {filtered.length === 0 ? (
-        <div style={{ background: theme.colors.card, border: "1px solid #e2e8f0", borderRadius: theme.borderRadius.lg, padding: "64px", textAlign: "center" }}>
-          <p style={{ fontSize: "14px", color: theme.colors.textMuted, margin: 0 }}>Inga ärenden hittades</p>
-        </div>
+        isFiltered ? (
+          <EmptyState
+            icon="search"
+            title="Inga ärenden matchar sökningen"
+            description="Försök med andra sökord eller filter för att hitta det du letar efter."
+          />
+        ) : (
+          <EmptyState
+            icon="inbox"
+            title="Inga ärenden inkomna"
+            description="Det finns inga ärenden i systemet ännu. Ärenden visas här när hyresgäster skapar dem."
+          />
+        )
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           {filtered.map((ticket) => {
@@ -119,7 +137,7 @@ export default function TicketSearch({ tickets }: { tickets: Ticket[] }) {
                 href={`/admin/tickets/${ticket.id}`}
                 style={{
                   background: theme.colors.card,
-                  border: "1px solid #e2e8f0",
+                  border: `1px solid ${theme.colors.border}`,
                   borderLeft: `4px solid ${status.border}`,
                   borderRadius: theme.borderRadius.lg,
                   borderTopLeftRadius: "0",
@@ -132,96 +150,36 @@ export default function TicketSearch({ tickets }: { tickets: Ticket[] }) {
                   gap: "16px",
                 }}
               >
-                {/* Vänster — info */}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  {/* Badges rad */}
                   <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "8px", flexWrap: "wrap" }}>
-                    <span style={{
-                      fontSize: "10px",
-                      fontWeight: 600,
-                      color: "#475569",
-                      background: "#f1f5f9",
-                      padding: "3px 8px",
-                      borderRadius: "4px",
-                      textTransform: "uppercase",
-                      letterSpacing: "0.06em",
-                    }}>
+                    <span style={{ fontSize: "10px", fontWeight: 600, color: "#475569", background: "#f1f5f9", padding: "3px 8px", borderRadius: "4px", textTransform: "uppercase", letterSpacing: "0.06em" }}>
                       {ticket.category}
                     </span>
-                    <span style={{
-                      fontSize: "10px",
-                      fontWeight: 600,
-                      color: priority.color,
-                      background: priority.bg,
-                      padding: "3px 8px",
-                      borderRadius: "4px",
-                    }}>
+                    <span style={{ fontSize: "10px", fontWeight: 600, color: priority.color, background: priority.bg, padding: "3px 8px", borderRadius: "4px" }}>
                       {priority.label}
                     </span>
                     <span style={{ fontSize: "11px", color: theme.colors.textMuted }}>
                       {new Date(ticket.createdAt).toLocaleDateString("sv-SE")}
                     </span>
                   </div>
-
-                  {/* Titel */}
-                  <p style={{
-                    fontSize: "15px",
-                    fontWeight: 600,
-                    color: theme.colors.textPrimary,
-                    margin: "0 0 6px",
-                    letterSpacing: "-0.2px",
-                  }}>
+                  <p style={{ fontSize: "15px", fontWeight: 600, color: theme.colors.textPrimary, margin: "0 0 6px", letterSpacing: "-0.2px" }}>
                     {ticket.title}
                   </p>
-
-                  {/* Beskrivning */}
-                  <p style={{
-                    fontSize: "12px",
-                    color: theme.colors.textSecondary,
-                    margin: "0 0 8px",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    whiteSpace: "nowrap",
-                    maxWidth: "500px",
-                  }}>
+                  <p style={{ fontSize: "12px", color: theme.colors.textSecondary, margin: "0 0 8px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                     {ticket.description}
                   </p>
-
-                  {/* Hyresgäst */}
                   <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                    <div style={{
-                      width: "20px",
-                      height: "20px",
-                      background: theme.colors.accentLight,
-                      border: `1px solid ${theme.colors.accentBorder}`,
-                      borderRadius: "50%",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      flexShrink: 0,
-                    }}>
+                    <div style={{ width: "20px", height: "20px", background: theme.colors.accentLight, border: `1px solid ${theme.colors.accentBorder}`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                       <span style={{ fontSize: "9px", fontWeight: 600, color: theme.colors.accent }}>
                         {ticket.user.name.charAt(0).toUpperCase()}
                       </span>
                     </div>
                     <span style={{ fontSize: "12px", color: theme.colors.textMuted }}>
-                      {ticket.user.name}
-                      {ticket.user.apartment ? ` · ${ticket.user.apartment}` : ""}
+                      {ticket.user.name}{ticket.user.apartment ? ` · ${ticket.user.apartment}` : ""}
                     </span>
                   </div>
                 </div>
-
-                {/* Höger — status */}
-                <span style={{
-                  fontSize: "11px",
-                  fontWeight: 600,
-                  color: status.color,
-                  background: status.bg,
-                  padding: "5px 14px",
-                  borderRadius: "20px",
-                  whiteSpace: "nowrap",
-                  flexShrink: 0,
-                }}>
+                <span style={{ fontSize: "11px", fontWeight: 600, color: status.color, background: status.bg, padding: "5px 14px", borderRadius: "20px", whiteSpace: "nowrap", flexShrink: 0 }}>
                   {status.label}
                 </span>
               </Link>
