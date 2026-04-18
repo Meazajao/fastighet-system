@@ -2,12 +2,13 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { theme } from "@/lib/theme";
 
 const STATUSES = [
-  { value: "OPEN", label: "Öppen" },
-  { value: "IN_PROGRESS", label: "Pågående" },
-  { value: "RESOLVED", label: "Löst" },
-  { value: "CLOSED", label: "Stängd" },
+  { value: "OPEN", label: "Öppen", color: theme.colors.accent },
+  { value: "IN_PROGRESS", label: "Pågående", color: "#7c3aed" },
+  { value: "RESOLVED", label: "Löst", color: theme.colors.success },
+  { value: "CLOSED", label: "Stängd", color: theme.colors.textMuted },
 ];
 
 export default function StatusUpdater({
@@ -37,23 +38,35 @@ export default function StatusUpdater({
   }
 
   return (
-    <div className="border-t border-gray-100 pt-4">
-      <p className="text-sm font-medium text-gray-700 mb-3">Uppdatera status</p>
-      <div className="flex gap-2 flex-wrap">
-        {STATUSES.map((s) => (
-          <button
-            key={s.value}
-            onClick={() => updateStatus(s.value)}
-            disabled={loading || status === s.value}
-            className={`text-xs font-medium px-3 py-1.5 rounded-xl border transition ${
-              status === s.value
-                ? "bg-violet-600 text-white border-violet-600"
-                : "bg-white text-gray-600 border-gray-200 hover:border-violet-300 disabled:opacity-50"
-            }`}
-          >
-            {s.label}
-          </button>
-        ))}
+    <div style={{ borderTop: "1px solid #f1f5f9", paddingTop: "16px" }}>
+      <p style={{ fontSize: "12px", fontWeight: 600, color: theme.colors.textSecondary, margin: "0 0 10px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+        Uppdatera status
+      </p>
+      <div style={{ display: "flex", gap: "8px", flexWrap: "wrap" }}>
+        {STATUSES.map((s) => {
+          const isActive = status === s.value;
+          return (
+            <button
+              key={s.value}
+              onClick={() => updateStatus(s.value)}
+              disabled={loading || isActive}
+              style={{
+                padding: "6px 14px",
+                borderRadius: "20px",
+                fontSize: "12px",
+                fontWeight: 600,
+                border: `1.5px solid ${isActive ? s.color : "#e2e8f0"}`,
+                background: isActive ? s.color : "#fff",
+                color: isActive ? "#fff" : theme.colors.textSecondary,
+                cursor: isActive || loading ? "not-allowed" : "pointer",
+                opacity: loading && !isActive ? 0.5 : 1,
+                transition: "all 0.15s",
+              }}
+            >
+              {s.label}
+            </button>
+          );
+        })}
       </div>
     </div>
   );

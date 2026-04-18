@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
+import { theme } from "@/lib/theme";
 
 interface Message {
   id: string;
@@ -67,14 +68,42 @@ export default function Chat({ ticketId, currentUserId, initialMessages }: ChatP
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 flex flex-col h-96">
-      <div className="px-5 py-4 border-b border-gray-100">
-        <h3 className="font-semibold text-gray-900 text-sm">Meddelanden</h3>
+    <div
+      style={{
+        background: theme.colors.card,
+        border: "1px solid #e2e8f0",
+        borderRadius: theme.borderRadius.lg,
+        display: "flex",
+        flexDirection: "column",
+        height: "420px",
+      }}
+    >
+      {/* Header */}
+      <div
+        style={{
+          padding: "16px 20px",
+          borderBottom: "1px solid #f1f5f9",
+          flexShrink: 0,
+        }}
+      >
+        <h3 style={{ fontSize: "14px", fontWeight: 600, color: theme.colors.textPrimary, margin: 0 }}>
+          Meddelanden
+        </h3>
       </div>
 
-      <div className="flex-1 overflow-y-auto px-5 py-4 space-y-3">
+      {/* Meddelandelista */}
+      <div
+        style={{
+          flex: 1,
+          overflowY: "auto",
+          padding: "16px 20px",
+          display: "flex",
+          flexDirection: "column",
+          gap: "12px",
+        }}
+      >
         {messages.length === 0 && (
-          <p className="text-center text-gray-400 text-sm pt-8">
+          <p style={{ textAlign: "center", color: theme.colors.textMuted, fontSize: "13px", marginTop: "32px" }}>
             Inga meddelanden ännu
           </p>
         )}
@@ -83,29 +112,32 @@ export default function Chat({ ticketId, currentUserId, initialMessages }: ChatP
           return (
             <div
               key={msg.id}
-              className={`flex ${isMe ? "justify-end" : "justify-start"}`}
+              style={{
+                display: "flex",
+                justifyContent: isMe ? "flex-end" : "flex-start",
+              }}
             >
               <div
-                className={`max-w-xs rounded-2xl px-4 py-2.5 ${
-                  isMe
-                    ? "bg-violet-600 text-white"
-                    : "bg-gray-100 text-gray-900"
-                }`}
+                style={{
+                  maxWidth: "70%",
+                  background: isMe ? theme.colors.accent : "#f1f5f9",
+                  borderRadius: isMe ? "14px 14px 2px 14px" : "14px 14px 14px 2px",
+                  padding: "10px 14px",
+                }}
               >
                 {!isMe && (
-                  <p className="text-xs font-medium mb-1 text-gray-500">
+                  <p style={{ fontSize: "11px", fontWeight: 600, color: theme.colors.accent, margin: "0 0 4px" }}>
                     {msg.user.name}
                     {msg.user.role === "ADMIN" && (
-                      <span className="ml-1 text-violet-500">· Admin</span>
+                      <span style={{ color: theme.colors.accent, marginLeft: "4px" }}>· Admin</span>
                     )}
                   </p>
                 )}
-                <p className="text-sm">{msg.text}</p>
-                <p className={`text-xs mt-1 ${isMe ? "text-violet-200" : "text-gray-400"}`}>
-                  {new Date(msg.createdAt).toLocaleTimeString("sv-SE", {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                  })}
+                <p style={{ fontSize: "13px", color: isMe ? "#fff" : theme.colors.textPrimary, margin: 0, lineHeight: 1.5 }}>
+                  {msg.text}
+                </p>
+                <p style={{ fontSize: "10px", color: isMe ? "rgba(255,255,255,0.6)" : theme.colors.textMuted, margin: "4px 0 0", textAlign: isMe ? "right" : "left" }}>
+                  {new Date(msg.createdAt).toLocaleTimeString("sv-SE", { hour: "2-digit", minute: "2-digit" })}
                 </p>
               </div>
             </div>
@@ -114,21 +146,51 @@ export default function Chat({ ticketId, currentUserId, initialMessages }: ChatP
         <div ref={bottomRef} />
       </div>
 
-      <div className="px-5 py-4 border-t border-gray-100">
-        <form onSubmit={handleSend} className="flex gap-2">
+      {/* Input */}
+      <div
+        style={{
+          padding: "12px 16px",
+          borderTop: "1px solid #f1f5f9",
+          flexShrink: 0,
+        }}
+      >
+        <form onSubmit={handleSend} style={{ display: "flex", gap: "10px", alignItems: "center" }}>
           <input
             type="text"
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="Skriv ett meddelande..."
-            className="flex-1 px-4 py-2 rounded-xl border border-gray-200 text-sm outline-none focus:ring-2 focus:ring-violet-500 focus:border-transparent transition"
+            style={{
+              flex: 1,
+              padding: "10px 14px",
+              background: "#f8fafc",
+              border: "1px solid #e2e8f0",
+              borderRadius: "20px",
+              fontSize: "13px",
+              outline: "none",
+              color: theme.colors.textPrimary,
+            }}
           />
           <button
             type="submit"
             disabled={sending || !text.trim()}
-            className="bg-violet-600 hover:bg-violet-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition disabled:opacity-50"
+            style={{
+              width: "38px",
+              height: "38px",
+              background: sending || !text.trim() ? "#bae6fd" : theme.colors.accent,
+              border: "none",
+              borderRadius: "50%",
+              cursor: sending || !text.trim() ? "not-allowed" : "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+              transition: "background 0.2s",
+            }}
           >
-            Skicka
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff">
+              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
+            </svg>
           </button>
         </form>
       </div>

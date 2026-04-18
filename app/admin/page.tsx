@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
+import MobileNav from "@/components/MobileNav";
+import MobileTopbar from "@/components/MobileTopbar";
 import TicketSearch from "@/components/tickets/TicketSearch";
 import { theme } from "@/lib/theme";
 
@@ -29,6 +31,8 @@ export default async function AdminPage() {
   return (
     <div className="app-layout" style={{ display: "flex", minHeight: "100vh" }}>
       <Sidebar role="ADMIN" name={dbUser.name} apartment={null} />
+      <MobileTopbar title="Översikt" name={dbUser.name} />
+      <MobileNav role="ADMIN" />
 
       <main className="main-content" style={{ flex: 1, background: theme.colors.background, padding: "32px" }}>
         <div style={{ marginBottom: "28px" }}>
@@ -47,15 +51,7 @@ export default async function AdminPage() {
             { label: "Pågående", value: inProgress, color: "#7c3aed" },
             { label: "Akuta", value: urgent, color: theme.colors.warning },
           ].map((stat) => (
-            <div
-              key={stat.label}
-              style={{
-                background: theme.colors.card,
-                border: "1px solid #e2e8f0",
-                borderRadius: theme.borderRadius.lg,
-                padding: "20px",
-              }}
-            >
+            <div key={stat.label} style={{ background: theme.colors.card, border: "1px solid #e2e8f0", borderRadius: theme.borderRadius.lg, padding: "20px" }}>
               <p style={{ fontSize: "11px", color: theme.colors.textMuted, margin: "0 0 8px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
                 {stat.label}
               </p>

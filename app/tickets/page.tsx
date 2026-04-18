@@ -2,6 +2,8 @@ import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
+import MobileNav from "@/components/MobileNav";
+import MobileTopbar from "@/components/MobileTopbar";
 import Link from "next/link";
 import { theme } from "@/lib/theme";
 
@@ -39,6 +41,8 @@ export default async function TicketsPage() {
   return (
     <div className="app-layout" style={{ display: "flex", minHeight: "100vh" }}>
       <Sidebar role="TENANT" name={dbUser.name} apartment={dbUser.apartment} />
+      <MobileTopbar title="Mina ärenden" name={dbUser.name} />
+      <MobileNav role="TENANT" />
 
       <main className="main-content" style={{ flex: 1, background: theme.colors.background, padding: "32px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "28px", flexWrap: "wrap", gap: "12px" }}>
@@ -50,18 +54,7 @@ export default async function TicketsPage() {
               {tickets.length} ärenden totalt
             </p>
           </div>
-          <Link
-            href="/tickets/new"
-            style={{
-              background: theme.colors.accent,
-              color: "#fff",
-              padding: "10px 18px",
-              borderRadius: theme.borderRadius.md,
-              fontSize: "13px",
-              fontWeight: 600,
-              textDecoration: "none",
-            }}
-          >
+          <Link href="/tickets/new" style={{ background: theme.colors.accent, color: "#fff", padding: "10px 18px", borderRadius: theme.borderRadius.md, fontSize: "13px", fontWeight: 600, textDecoration: "none" }}>
             + Nytt ärende
           </Link>
         </div>
