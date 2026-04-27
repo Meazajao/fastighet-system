@@ -1,25 +1,20 @@
 import type { Metadata } from "next";
-import "./globals.css";
+import { Inter } from "next/font/google";
 import { Toaster } from "sonner";
+import "./globals.css";
+
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
   title: {
-    default: "Fastighet — Ärendehantering",
-    template: "%s | Fastighet",
+    default: "Fastighet — Stockholm Stad",
+    template: "%s · Fastighet",
   },
-  description: "Internt ärendehanteringssystem för fastighetsförvaltning. Hantera felanmälningar, kommunicera med hyresgäster och följ upp ärenden.",
-  keywords: ["fastighet", "ärendehantering", "felanmälan", "hyresgäst"],
-  authors: [{ name: "Fastighet AB" }],
-  robots: {
-    index: false,
-    follow: false,
-  },
-  openGraph: {
-    title: "Fastighet — Ärendehantering",
-    description: "Internt ärendehanteringssystem",
-    type: "website",
-    locale: "sv_SE",
-  },
+  description: "Ärendehanteringssystem för fastigheter i Stockholm Stad",
 };
 
 export default function RootLayout({
@@ -28,21 +23,21 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="sv">
-      <body>
-        {children}
+    <html lang="sv" className={inter.variable}>
+      <body style={{ fontFamily: "var(--font-inter), -apple-system, sans-serif" }}>
         <Toaster
           position="top-right"
           toastOptions={{
             style: {
-              background: "#ffffff",
-              border: "1px solid #e5e7eb",
-              borderRadius: "6px",
+              fontFamily: "var(--font-inter), sans-serif",
               fontSize: "13px",
-              color: "#111827",
+              borderRadius: "12px",
+              border: "1px solid #ebebf0",
+              boxShadow: "0 8px 24px rgba(0,0,0,0.08)",
             },
           }}
         />
+        {children}
       </body>
     </html>
   );

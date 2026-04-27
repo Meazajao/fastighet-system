@@ -5,8 +5,11 @@ import Sidebar from "@/components/Sidebar";
 import MobileNav from "@/components/MobileNav";
 import MobileTopbar from "@/components/MobileTopbar";
 import EmptyState from "@/components/ui/EmptyState";
+import Footer from "@/components/ui/Footer";
+import TenantNotifications from "@/components/TenantNotifications";
 import Link from "next/link";
-import { theme } from "@/lib/theme";
+import { statusBadgeStyle, statusLabel, priorityBadgeStyle, priorityLabel, categoryLabel } from "@/lib/styles";
+import { Plus } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Mina ärenden" };
@@ -14,13 +17,9 @@ export const metadata: Metadata = { title: "Mina ärenden" };
 export default async function TicketsPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-
   if (!user) redirect("/login");
 
-  const dbUser = await prisma.user.findUnique({
-    where: { email: user.email! },
-  });
-
+  const dbUser = await prisma.user.findUnique({ where: { email: user.email! } });
   if (!dbUser) redirect("/login");
 
   const tickets = await prisma.ticket.findMany({
@@ -28,102 +27,94 @@ export default async function TicketsPage() {
     orderBy: { createdAt: "desc" },
   });
 
-  const statusConfig: Record<string, { color: string; bg: string; label: string }> = {
-    OPEN: { color: theme.colors.accent, bg: theme.colors.accentLight, label: "Öppen" },
-    IN_PROGRESS: { color: "#7c3aed", bg: "#f5f3ff", label: "Pågående" },
-    RESOLVED: { color: theme.colors.success, bg: theme.colors.successLight, label: "Löst" },
-    CLOSED: { color: theme.colors.textMuted, bg: "#f1f5f9", label: "Stängd" },
-  };
-
-  const priorityConfig: Record<string, { color: string; bg: string; label: string }> = {
-    LOW: { color: theme.colors.textMuted, bg: "#f1f5f9", label: "Låg" },
-    MEDIUM: { color: theme.colors.accent, bg: theme.colors.accentLight, label: "Normal" },
-    HIGH: { color: theme.colors.warning, bg: theme.colors.warningLight, label: "Hög" },
-    URGENT: { color: theme.colors.danger, bg: theme.colors.dangerLight, label: "Akut" },
-  };
-
   return (
-    <div className="app-layout" style={{ display: "flex", minHeight: "100vh" }}>
+    <div className="app-layout flex min-h-screen">
       <Sidebar role="TENANT" name={dbUser.name} apartment={dbUser.apartment} />
       <MobileTopbar title="Mina ärenden" name={dbUser.name} />
       <MobileNav role="TENANT" />
+      <TenantNotifications userId={dbUser.id} />
 
-      <main className="main-content" style={{ flex: 1, background: theme.colors.background, padding: "32px" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "28px", flexWrap: "wrap", gap: "12px" }}>
+      <main className="main-content flex-1 bg-background flex flex-col">
+
+        <div className="bg-card border-b border-border px-4 md:px-8 py-4 md:py-5 flex items-center justify-between shrink-0">
           <div>
-            <h1 style={{ fontSize: "24px", fontWeight: 600, color: theme.colors.textPrimary, margin: "0 0 4px", letterSpacing: "-0.5px" }}>
+            <div className="text-[11px] md:text-[12px] text-text-muted font-medium mb-0.5">
+              {tickets.length} ärenden totalt
+            </div>
+            <h1 className="text-[18px] md:text-[22px] font-bold text-text-primary tracking-[-0.5px] m-0">
               Mina ärenden
             </h1>
-            <p style={{ fontSize: "13px", color: theme.colors.textMuted, margin: 0 }}>
-              {tickets.length} ärenden totalt
-            </p>
           </div>
           <Link
             href="/tickets/new"
-            style={{ background: theme.colors.accent, color: "#fff", padding: "10px 18px", borderRadius: theme.borderRadius.md, fontSize: "13px", fontWeight: 600, textDecoration: "none" }}
+            className="flex items-center gap-1.5 px-3 md:px-5 py-2 md:py-2.5 rounded-xl no-underline font-semibold text-[12px] md:text-[13px] text-white transition-opacity hover:opacity-90"
+            style={{ background: "linear-gradient(135deg, #5e35b1, #7c4dff)", boxShadow: "0 4px 12px rgba(94,53,177,0.3)" }}
           >
-            + Nytt ärende
+            <Plus size={14} color="#fff" />
+            <span className="hidden sm:inline">Nytt ärende</span>
+            <span className="sm:hidden">Nytt</span>
           </Link>
         </div>
 
-        {tickets.length === 0 ? (
-          <EmptyState
-            icon="ticket"
-            title="Inga ärenden hittades"
-            description="Du har inga aktiva ärenden. Skapa ett nytt ärende för att rapportera ett fel eller en skada i din lägenhet."
-            action={{ label: "+ Nytt ärende", href: "/tickets/new" }}
-          />
-        ) : (
-          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-            {tickets.map((ticket) => {
-              const status = statusConfig[ticket.status] || statusConfig.OPEN;
-              const priority = priorityConfig[ticket.priority] || priorityConfig.MEDIUM;
-              return (
+        <div className="p-4 md:p-8 flex-1">
+          {tickets.length === 0 ? (
+            <EmptyState
+              icon="inbox"
+              title="Inga ärenden ännu"
+              description="Du har inte skapat några ärenden. Klicka på knappen ovan för att anmäla ett fel."
+              action={{ label: "Skapa ditt första ärende", href: "/tickets/new" }}
+            />
+          ) : (
+            <div className="flex flex-col gap-2 md:gap-3">
+              {tickets.map((ticket) => (
                 <Link
                   key={ticket.id}
                   href={`/tickets/${ticket.id}`}
-                  style={{
-                    background: theme.colors.card,
-                    border: `1px solid ${theme.colors.border}`,
-                    borderLeft: `4px solid ${status.color}`,
-                    borderRadius: theme.borderRadius.lg,
-                    borderTopLeftRadius: "0",
-                    borderBottomLeftRadius: "0",
-                    padding: "18px 24px",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    textDecoration: "none",
-                    gap: "16px",
-                  }}
+                  className="flex items-center bg-card rounded-2xl border border-border no-underline hover:border-primary transition-all duration-150 overflow-hidden"
+                  style={{ boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}
                 >
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "6px", flexWrap: "wrap" }}>
-                      <span style={{ fontSize: "10px", fontWeight: 600, color: "#475569", textTransform: "uppercase", letterSpacing: "0.08em", background: "#f1f5f9", padding: "2px 8px", borderRadius: "4px" }}>
-                        {ticket.category}
-                      </span>
-                      <span style={{ fontSize: "10px", fontWeight: 600, color: priority.color, background: priority.bg, padding: "2px 8px", borderRadius: "4px" }}>
-                        {priority.label}
-                      </span>
-                      <span style={{ fontSize: "11px", color: theme.colors.textMuted }}>
-                        {new Date(ticket.createdAt).toLocaleDateString("sv-SE")}
+                  <div
+                    className="w-1.5 self-stretch shrink-0"
+                    style={{
+                      background: ticket.priority === "URGENT" ? "#ff3b30"
+                        : ticket.priority === "HIGH" ? "#f5a623"
+                        : ticket.priority === "MEDIUM" ? "#5e35b1"
+                        : "#ebebf0",
+                    }}
+                  />
+                  <div className="flex-1 px-4 md:px-5 py-3 md:py-4 min-w-0">
+                    <div className="flex items-start justify-between gap-2 md:gap-3">
+                      <div className="min-w-0">
+                        <div className="flex items-center gap-1.5 mb-1 flex-wrap">
+                          <span className="text-[10px] md:text-[11px] font-semibold text-text-muted bg-background px-2 py-0.5 rounded-lg">
+                            {categoryLabel(ticket.category)}
+                          </span>
+                          <span style={{ ...priorityBadgeStyle(ticket.priority), fontSize: "10px", padding: "2px 8px" }}>
+                            {priorityLabel(ticket.priority)}
+                          </span>
+                          <span className="text-[10px] text-text-disabled ml-auto">
+                            {new Date(ticket.createdAt).toLocaleDateString("sv-SE")}
+                          </span>
+                        </div>
+                        <p className="text-[13px] md:text-[15px] font-semibold text-text-primary m-0 mb-0.5 tracking-[-0.2px] capitalize truncate">
+                          {ticket.title}
+                        </p>
+                        <p className="hidden md:block text-[12px] text-text-muted m-0 truncate">
+                          {ticket.description}
+                        </p>
+                      </div>
+                      <span style={{ ...statusBadgeStyle(ticket.status), flexShrink: 0, fontSize: "10px", padding: "3px 8px" }}>
+                        {statusLabel(ticket.status)}
                       </span>
                     </div>
-                    <p style={{ fontSize: "15px", fontWeight: 600, color: theme.colors.textPrimary, margin: "0 0 4px" }}>
-                      {ticket.title}
-                    </p>
-                    <p className="ticket-description" style={{ fontSize: "12px", color: theme.colors.textSecondary, margin: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                      {ticket.description}
-                    </p>
                   </div>
-                  <span style={{ fontSize: "11px", fontWeight: 600, color: status.color, background: status.bg, padding: "5px 14px", borderRadius: "20px", whiteSpace: "nowrap", flexShrink: 0 }}>
-                    {status.label}
-                  </span>
                 </Link>
-              );
-            })}
-          </div>
-        )}
+              ))}
+            </div>
+          )}
+        </div>
+
+        <Footer />
       </main>
     </div>
   );

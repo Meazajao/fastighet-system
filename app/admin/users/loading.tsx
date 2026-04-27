@@ -1,26 +1,33 @@
 import { Skeleton } from "@/components/ui/Skeleton";
-import { theme } from "@/lib/theme";
 
-export default function UsersLoading() {
+export default function AdminUsersLoading() {
   return (
-    <div className="app-layout" style={{ display: "flex", minHeight: "100vh" }}>
-      <div style={{ width: "220px", minHeight: "100vh", background: "#0a1628", flexShrink: 0 }} className="sidebar" />
-      <main className="main-content" style={{ flex: 1, background: theme.colors.background, padding: "32px" }}>
-        <Skeleton width="150px" height="28px" style={{ marginBottom: "8px" }} />
-        <Skeleton width="200px" height="16px" style={{ marginBottom: "28px" }} />
-        <div style={{ background: theme.colors.card, border: "1px solid #e2e8f0", borderRadius: theme.borderRadius.lg, overflow: "hidden" }}>
-          {[1, 2, 3, 4, 5].map((i, index) => (
-            <div key={i} style={{ padding: "16px 24px", borderBottom: index < 4 ? "1px solid #f8fafc" : "none", display: "flex", alignItems: "center", gap: "14px" }}>
-              <Skeleton width="36px" height="36px" borderRadius="50%" />
-              <div style={{ flex: 1 }}>
-                <Skeleton width="150px" height="16px" style={{ marginBottom: "6px" }} />
-                <Skeleton width="200px" height="12px" />
+    <div className="app-layout flex min-h-screen">
+      <div className="w-55 min-h-screen bg-white border-r border-gray-100 shrink-0" />
+      <div className="flex-1 bg-background flex flex-col">
+        <div className="bg-white border-b border-gray-100 px-8 py-5">
+          <Skeleton className="h-3 w-24 mb-2" />
+          <Skeleton className="h-7 w-36" />
+        </div>
+        <div className="p-8 flex flex-col gap-3">
+          <Skeleton className="h-3 w-40 mb-1" />
+          {[1, 2, 3, 4, 5].map((i) => (
+            <div key={i} className="bg-white rounded-2xl border border-gray-100 px-5 py-4 flex items-center justify-between" style={{ boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}>
+              <div className="flex items-center gap-4">
+                <Skeleton className="w-10 h-10 rounded-full shrink-0" />
+                <div>
+                  <Skeleton className="h-4 w-32 mb-1.5" />
+                  <Skeleton className="h-3 w-48" />
+                </div>
               </div>
-              <Skeleton width="80px" height="24px" borderRadius="20px" />
+              <div className="flex items-center gap-4">
+                <Skeleton className="h-3 w-16" />
+                <Skeleton className="h-7 w-20 rounded-full" />
+              </div>
             </div>
           ))}
         </div>
-      </main>
+      </div>
     </div>
   );
 }

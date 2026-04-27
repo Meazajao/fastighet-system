@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import { theme } from "@/lib/theme";
 
 interface ErrorBoundaryProps {
   error: Error & { digest?: string };
@@ -15,104 +14,39 @@ export default function ErrorBoundary({ error, reset, title = "Något gick fel" 
   }, [error]);
 
   return (
-    <div
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        alignItems: "center",
-        justifyContent: "center",
-        minHeight: "400px",
-        padding: "32px",
-        textAlign: "center",
-      }}
-    >
-      <div
-        style={{
-          width: "48px",
-          height: "48px",
-          background: theme.colors.dangerLight,
-          border: `1px solid ${theme.colors.dangerBorder}`,
-          borderRadius: "50%",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          marginBottom: "16px",
-        }}
-      >
-        <svg width="20" height="20" viewBox="0 0 24 24" fill={theme.colors.danger}>
+    <div className="flex flex-col items-center justify-center min-h-100 p-8 text-center">
+      <div className="w-12 h-12 bg-danger-light border border-danger-border rounded-full flex items-center justify-center mb-4">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="#a32d2d">
           <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
         </svg>
       </div>
 
-      <h2 style={{
-        fontSize: theme.fontSize.lg,
-        fontWeight: 600,
-        color: theme.colors.textPrimary,
-        margin: "0 0 8px",
-        letterSpacing: "-0.3px",
-      }}>
+      <h2 className="text-[18px] font-medium text-text-primary m-0 mb-2 tracking-[-0.3px]">
         {title}
       </h2>
-
-      <p style={{
-        fontSize: theme.fontSize.sm,
-        color: theme.colors.textMuted,
-        margin: "0 0 24px",
-        maxWidth: "400px",
-        lineHeight: 1.6,
-      }}>
+      <p className="text-[12px] text-text-muted m-0 mb-6 max-w-100 leading-[1.6]">
         Ett oväntat fel uppstod. Försök igen eller kontakta support om problemet kvarstår.
       </p>
 
       {process.env.NODE_ENV === "development" && (
-        <div style={{
-          background: theme.colors.dangerLight,
-          border: `1px solid ${theme.colors.dangerBorder}`,
-          borderRadius: theme.borderRadius.md,
-          padding: "12px 16px",
-          marginBottom: "24px",
-          maxWidth: "500px",
-          textAlign: "left",
-        }}>
-          <p style={{ fontSize: "11px", fontWeight: 600, color: theme.colors.danger, margin: "0 0 4px" }}>
-            Felmeddelande (visas bara i development)
-          </p>
-          <p style={{ fontSize: "11px", color: theme.colors.danger, margin: 0, fontFamily: "monospace", wordBreak: "break-all" }}>
-            {error.message}
-          </p>
+        <div className="bg-danger-light border border-danger-border px-4 py-3 mb-6 max-w-125 text-left">
+          <p className="text-[9px] font-medium text-danger m-0 mb-1 uppercase tracking-[0.05em]">Dev error</p>
+          <p className="text-[11px] text-danger m-0 font-mono break-all">{error.message}</p>
         </div>
       )}
 
-      <div style={{ display: "flex", gap: "12px" }}>
+      <div className="flex gap-2">
         <button
           onClick={reset}
-          style={{
-            padding: "10px 20px",
-            background: theme.colors.accent,
-            border: "none",
-            borderRadius: theme.borderRadius.md,
-            fontSize: theme.fontSize.base,
-            fontWeight: 600,
-            color: "#fff",
-            cursor: "pointer",
-          }}
+          className="px-4 py-2 bg-sidebar text-white text-[11px] font-medium uppercase tracking-[0.3px] border-none cursor-pointer hover:bg-sidebar-dark transition-colors font-[inherit]"
         >
           Försök igen
         </button>
         <button
           onClick={() => window.location.href = "/dashboard"}
-          style={{
-            padding: "10px 20px",
-            background: "transparent",
-            border: `1px solid ${theme.colors.border}`,
-            borderRadius: theme.borderRadius.md,
-            fontSize: theme.fontSize.base,
-            fontWeight: 600,
-            color: theme.colors.textSecondary,
-            cursor: "pointer",
-          }}
+          className="px-4 py-2 bg-card border border-border text-[11px] text-text-muted font-medium uppercase tracking-[0.3px] cursor-pointer hover:bg-background transition-colors font-[inherit]"
         >
-          Gå till startsidan
+          Startsidan
         </button>
       </div>
     </div>

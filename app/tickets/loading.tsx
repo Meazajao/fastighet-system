@@ -1,22 +1,21 @@
-import { TicketCardSkeleton, Skeleton } from "@/components/ui/Skeleton";
-import { theme } from "@/lib/theme";
+import { AdminTicketCardSkeleton, Skeleton } from "@/components/ui/Skeleton";
 
 export default function TicketsLoading() {
   return (
-    <div className="app-layout" style={{ display: "flex", minHeight: "100vh" }}>
-      <div style={{ width: "220px", minHeight: "100vh", background: "#0a1628", flexShrink: 0 }} className="sidebar" />
-      <main className="main-content" style={{ flex: 1, background: theme.colors.background, padding: "32px" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "28px" }}>
+    <div className="app-layout flex min-h-screen">
+      <div className="w-55 min-h-screen bg-white border-r border-gray-100 shrink-0" />
+      <div className="flex-1 bg-background flex flex-col">
+        <div className="bg-white border-b border-gray-100 px-8 py-5 flex items-center justify-between">
           <div>
-            <Skeleton width="180px" height="28px" style={{ marginBottom: "8px" }} />
-            <Skeleton width="120px" height="16px" />
+            <Skeleton className="h-3 w-24 mb-2" />
+            <Skeleton className="h-7 w-36" />
           </div>
-          <Skeleton width="120px" height="38px" />
+          <Skeleton className="h-10 w-32 rounded-xl" />
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          {[1, 2, 3, 4, 5].map((i) => <TicketCardSkeleton key={i} />)}
+        <div className="p-8 flex flex-col gap-3">
+          {[1, 2, 3, 4, 5].map((i) => <AdminTicketCardSkeleton key={i} />)}
         </div>
-      </main>
+      </div>
     </div>
   );
 }

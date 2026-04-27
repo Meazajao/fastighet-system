@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { theme } from "@/lib/theme";
+import { Upload, X } from "lucide-react";
 
 const CATEGORIES = [
   { value: "VVS", label: "VVS (vatten, avlopp)" },
@@ -45,39 +45,24 @@ export default function NewTicketForm() {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-
-    if (title.length < 3) {
-      toast.error("Rubriken måste vara minst 3 tecken");
-      return;
-    }
-    if (description.length < 10) {
-      toast.error("Beskrivningen måste vara minst 10 tecken");
-      return;
-    }
+    if (title.length < 3) { toast.error("Rubriken måste vara minst 3 tecken"); return; }
+    if (description.length < 10) { toast.error("Beskrivningen måste vara minst 10 tecken"); return; }
 
     setLoading(true);
     const loadingToast = toast.loading("Skickar ärende...");
-
     let imageUrl = null;
 
     if (image) {
       const formData = new FormData();
       formData.append("file", image);
-
-      const uploadRes = await fetch("/api/storage/upload", {
-        method: "POST",
-        body: formData,
-      });
-
+      const uploadRes = await fetch("/api/storage/upload", { method: "POST", body: formData });
       const uploadData = await uploadRes.json();
-
       if (!uploadRes.ok) {
         toast.dismiss(loadingToast);
         toast.error(uploadData.error || "Kunde inte ladda upp bilden");
         setLoading(false);
         return;
       }
-
       imageUrl = uploadData.path;
     }
 
@@ -97,125 +82,166 @@ export default function NewTicketForm() {
     }
 
     toast.success("Ärendet har skickats in");
-    router.push("/dashboard");
+    router.push("/tickets");
   }
 
-  const inputStyle = {
-    width: "100%",
-    padding: "10px 14px",
-    background: theme.colors.background,
-    border: "1px solid #e2e8f0",
-    borderRadius: theme.borderRadius.md,
-    fontSize: "14px",
-    outline: "none",
-    boxSizing: "border-box" as const,
-    color: theme.colors.textPrimary,
-  };
-
-  const labelStyle = {
-    display: "block",
-    fontSize: "11px",
-    fontWeight: 600,
-    color: theme.colors.textSecondary,
-    marginBottom: "6px",
-    letterSpacing: "0.05em",
-  };
+  const inputClass = "w-full px-4 py-3 bg-background border border-border rounded-xl text-[13px] text-text-primary outline-none font-[inherit] focus:border-primary transition-colors";
+  const labelClass = "block text-[12px] font-semibold text-text-secondary mb-2";
 
   return (
-    <div style={{ background: theme.colors.card, border: "1px solid #e2e8f0", borderRadius: theme.borderRadius.lg, padding: "28px" }}>
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-        <div>
-          <label style={labelStyle}>RUBRIK</label>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+
+      {/* Grundinfo */}
+      <div
+        className="bg-card rounded-2xl border border-border overflow-hidden"
+        style={{ boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}
+      >
+        <div className="px-6 py-4 border-b border-border">
+          <span className="text-[14px] font-bold text-text-primary">Grundinformation</span>
+        </div>
+        <div className="p-6 flex flex-col gap-5">
+          <div>
+            <label className={labelClass}>Rubrik</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="t.ex. Läckande kran i badrummet"
+              required
+              className={inputClass}
+            />
+            {title.length > 0 && title.length < 3 && (
+              <p className="text-[11px] text-danger mt-1.5">Minst 3 tecken krävs</p>
+            )}
+          </div>
+
+          <div className="form-grid-2 grid grid-cols-2 gap-4">
+            <div>
+              <label className={labelClass}>Kategori</label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className={`${inputClass} cursor-pointer`}
+              >
+                {CATEGORIES.map((c) => (
+                  <option key={c.value} value={c.value}>{c.label}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className={labelClass}>Prioritet</label>
+              <select
+                value={priority}
+                onChange={(e) => setPriority(e.target.value)}
+                className={`${inputClass} cursor-pointer`}
+              >
+                {PRIORITIES.map((p) => (
+                  <option key={p.value} value={p.value}>{p.label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <label className={labelClass}>Beskrivning</label>
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Beskriv problemet så detaljerat som möjligt — när det uppstod, hur ofta det händer och eventuella konsekvenser."
+              required
+              rows={5}
+              className={`${inputClass} resize-none leading-[1.7]`}
+            />
+            {description.length > 0 && description.length < 10 && (
+              <p className="text-[11px] text-danger mt-1.5">Minst 10 tecken krävs</p>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Bild */}
+      <div
+        className="bg-card rounded-2xl border border-border overflow-hidden"
+        style={{ boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}
+      >
+        <div className="px-6 py-4 border-b border-border">
+          <span className="text-[14px] font-bold text-text-primary">Bifoga bild</span>
+          <span className="text-[12px] text-text-muted ml-2">(valfritt)</span>
+        </div>
+        <div className="p-6">
           <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="t.ex. Läckande kran i badrummet"
-            required
-            style={inputStyle}
+            type="file"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="hidden"
+            id="image-upload"
           />
-          {title.length > 0 && title.length < 3 && (
-            <p style={{ fontSize: "11px", color: theme.colors.danger, margin: "4px 0 0" }}>
-              Minst 3 tecken krävs
-            </p>
-          )}
-        </div>
-
-        <div className="form-grid-2" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
-          <div>
-            <label style={labelStyle}>KATEGORI</label>
-            <select value={category} onChange={(e) => setCategory(e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
-              {CATEGORIES.map((c) => (
-                <option key={c.value} value={c.value}>{c.label}</option>
-              ))}
-            </select>
-          </div>
-          <div>
-            <label style={labelStyle}>PRIORITET</label>
-            <select value={priority} onChange={(e) => setPriority(e.target.value)} style={{ ...inputStyle, cursor: "pointer" }}>
-              {PRIORITIES.map((p) => (
-                <option key={p.value} value={p.value}>{p.label}</option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <div>
-          <label style={labelStyle}>BESKRIVNING</label>
-          <textarea
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            placeholder="Beskriv problemet så detaljerat som möjligt..."
-            required
-            rows={5}
-            style={{ ...inputStyle, resize: "none", lineHeight: 1.7 }}
-          />
-          {description.length > 0 && description.length < 10 && (
-            <p style={{ fontSize: "11px", color: theme.colors.danger, margin: "4px 0 0" }}>
-              Minst 10 tecken krävs
-            </p>
-          )}
-        </div>
-
-        <div>
-          <label style={labelStyle}>BIFOGA BILD (VALFRITT)</label>
-          <div style={{ border: "2px dashed #e2e8f0", borderRadius: theme.borderRadius.md, padding: "24px", textAlign: "center", cursor: "pointer" }}>
-            <input type="file" accept="image/*" onChange={handleImageChange} style={{ display: "none" }} id="image-upload" />
-            <label htmlFor="image-upload" style={{ cursor: "pointer" }}>
-              {imagePreview ? (
-                <img src={imagePreview} alt="Förhandsvisning" style={{ maxHeight: "200px", margin: "0 auto", borderRadius: "8px", objectFit: "cover", display: "block" }} />
-              ) : (
-                <div>
-                  <p style={{ fontSize: "14px", color: theme.colors.textMuted, margin: "0 0 4px" }}>Klicka för att ladda upp</p>
-                  <p style={{ fontSize: "12px", color: "#cbd5e1", margin: 0 }}>PNG, JPG upp till 10MB</p>
+          <label
+            htmlFor="image-upload"
+            className="block border-2 border-dashed border-border rounded-2xl p-8 text-center cursor-pointer hover:border-primary transition-colors"
+            style={{ background: "#f8f8fc" }}
+          >
+            {imagePreview ? (
+              <img
+                src={imagePreview}
+                alt="Förhandsvisning"
+                className="max-h-50 mx-auto block object-cover rounded-xl"
+              />
+            ) : (
+              <div className="flex flex-col items-center gap-3">
+                <div
+                  className="w-12 h-12 rounded-2xl flex items-center justify-center"
+                  style={{ background: "#f3f0ff" }}
+                >
+                  <Upload size={20} color="#5e35b1" />
                 </div>
-              )}
-            </label>
-          </div>
+                <div>
+                  <p className="text-[13px] font-semibold text-text-primary m-0 mb-1">
+                    Klicka för att ladda upp
+                  </p>
+                  <p className="text-[12px] text-text-muted m-0">
+                    PNG, JPG upp till 10MB
+                  </p>
+                </div>
+              </div>
+            )}
+          </label>
           {imagePreview && (
-            <button type="button" onClick={() => { setImage(null); setImagePreview(null); }} style={{ fontSize: "12px", color: theme.colors.danger, background: "none", border: "none", cursor: "pointer", marginTop: "8px", padding: 0 }}>
+            <button
+              type="button"
+              onClick={() => { setImage(null); setImagePreview(null); }}
+              className="mt-3 flex items-center gap-1.5 text-[12px] text-danger bg-transparent border-none cursor-pointer p-0 font-medium font-[inherit]"
+            >
+              <X size={13} />
               Ta bort bild
             </button>
           )}
         </div>
+      </div>
 
-        <div style={{ display: "flex", gap: "12px" }}>
-          <button
-            type="button"
-            onClick={() => router.push("/dashboard")}
-            style={{ flex: 1, padding: "12px", background: "transparent", border: "1px solid #e2e8f0", borderRadius: theme.borderRadius.md, fontSize: "14px", fontWeight: 600, color: theme.colors.textSecondary, cursor: "pointer" }}
-          >
-            Avbryt
-          </button>
-          <button
-            type="submit"
-            disabled={loading}
-            style={{ flex: 1, padding: "12px", background: loading ? "#7dd3fc" : theme.colors.accent, border: "none", borderRadius: theme.borderRadius.md, fontSize: "14px", fontWeight: 600, color: "#fff", cursor: loading ? "not-allowed" : "pointer" }}
-          >
-            {loading ? "Skickar..." : "Skicka ärende"}
-          </button>
-        </div>
-      </form>
-    </div>
+      {/* Knappar */}
+      <div className="flex gap-3 justify-end">
+        <button
+          type="button"
+          onClick={() => router.push("/tickets")}
+          className="px-5 py-2.5 bg-card border border-border rounded-xl text-[13px] text-text-muted font-semibold cursor-pointer hover:bg-background transition-colors font-[inherit]"
+        >
+          Avbryt
+        </button>
+        <button
+          type="submit"
+          disabled={loading}
+          className={`px-5 py-2.5 rounded-xl text-white text-[13px] font-semibold border-none font-[inherit] ${
+            loading ? "opacity-70 cursor-not-allowed" : "cursor-pointer hover:opacity-90 transition-opacity"
+          }`}
+          style={{
+            background: "linear-gradient(135deg, #5e35b1, #7c4dff)",
+            boxShadow: loading ? "none" : "0 4px 12px rgba(94,53,177,0.3)",
+          }}
+        >
+          {loading ? "Skickar..." : "Skicka ärende"}
+        </button>
+      </div>
+    </form>
   );
 }

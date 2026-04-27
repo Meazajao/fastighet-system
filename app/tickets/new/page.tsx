@@ -5,40 +5,48 @@ import Sidebar from "@/components/Sidebar";
 import MobileNav from "@/components/MobileNav";
 import MobileTopbar from "@/components/MobileTopbar";
 import NewTicketForm from "./NewTicketForm";
-import { theme } from "@/lib/theme";
+import Footer from "@/components/ui/Footer";
+import BackButton from "@/components/ui/BackButton";
 import type { Metadata } from "next";
+
 export const metadata: Metadata = { title: "Nytt ärende" };
 
 export default async function NewTicketPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-
   if (!user) redirect("/login");
 
-  const dbUser = await prisma.user.findUnique({
-    where: { email: user.email! },
-  });
-
+  const dbUser = await prisma.user.findUnique({ where: { email: user.email! } });
   if (!dbUser) redirect("/login");
 
   return (
-    <div className="app-layout" style={{ display: "flex", minHeight: "100vh" }}>
+    <div className="app-layout flex min-h-screen">
       <Sidebar role="TENANT" name={dbUser.name} apartment={dbUser.apartment} />
       <MobileTopbar title="Nytt ärende" backHref="/tickets" name={dbUser.name} />
       <MobileNav role="TENANT" />
 
-      <main className="main-content" style={{ flex: 1, background: theme.colors.background, padding: "32px" }}>
-        <div style={{ maxWidth: "720px" }}>
-          <div style={{ marginBottom: "24px" }}>
-            <h1 style={{ fontSize: "24px", fontWeight: 600, color: theme.colors.textPrimary, margin: "0 0 4px", letterSpacing: "-0.5px" }}>
-              Nytt ärende
-            </h1>
-            <p style={{ fontSize: "13px", color: theme.colors.textMuted, margin: 0 }}>
-              Beskriv felet så detaljerat som möjligt
-            </p>
+      <main className="main-content flex-1 bg-background flex flex-col">
+
+        <div className="bg-card border-b border-border px-4 md:px-8 py-4 md:py-5 shrink-0">
+          <div className="hidden md:block">
+            <BackButton href="/tickets" label="Mina ärenden" />
           </div>
-          <NewTicketForm />
+          <div className="flex items-center gap-2 mb-1">
+            <div className="w-1.5 h-5 rounded-full" style={{ background: "linear-gradient(180deg, #5e35b1, #7c4dff)" }} />
+            <span className="text-[11px] font-semibold text-text-muted uppercase tracking-[0.08em]">Felanmälan</span>
+          </div>
+          <h1 className="text-[18px] md:text-[22px] font-bold text-text-primary tracking-[-0.5px] m-0">
+            Nytt ärende
+          </h1>
         </div>
+
+        <div className="p-4 md:p-8 flex-1">
+          <div className="max-w-170">
+            <NewTicketForm />
+          </div>
+        </div>
+
+        <Footer />
       </main>
     </div>
   );

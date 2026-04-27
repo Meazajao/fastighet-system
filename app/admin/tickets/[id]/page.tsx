@@ -7,106 +7,90 @@ import MobileTopbar from "@/components/MobileTopbar";
 import Chat from "@/components/chat/Chat";
 import StatusUpdater from "@/components/tickets/StatusUpdater";
 import TicketImage from "@/components/tickets/TicketImage";
-import { theme } from "@/lib/theme";
+import BackButton from "@/components/ui/BackButton";
+import Footer from "@/components/ui/Footer";
+import { statusBadgeStyle, statusLabel, priorityBadgeStyle, priorityLabel, categoryLabel } from "@/lib/styles";
 
-export default async function AdminTicketPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
+export default async function AdminTicketPage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-
   if (!user) redirect("/login");
 
-  const dbUser = await prisma.user.findUnique({
-    where: { email: user.email! },
-  });
-
+  const dbUser = await prisma.user.findUnique({ where: { email: user.email! } });
   if (dbUser?.role !== "ADMIN") redirect("/dashboard");
 
   const { id } = await params;
-
   const ticket = await prisma.ticket.findUnique({
     where: { id },
-    include: {
-      user: true,
-      messages: {
-        include: { user: true },
-        orderBy: { createdAt: "asc" },
-      },
-    },
+    include: { user: true, messages: { include: { user: true }, orderBy: { createdAt: "asc" } } },
   });
 
-  if (!ticket) redirect("/admin");
-
-  const priorityConfig: Record<string, { color: string; bg: string; label: string }> = {
-    LOW: { color: theme.colors.textMuted, bg: "#f1f5f9", label: "Låg" },
-    MEDIUM: { color: theme.colors.accent, bg: theme.colors.accentLight, label: "Normal" },
-    HIGH: { color: theme.colors.warning, bg: theme.colors.warningLight, label: "Hög" },
-    URGENT: { color: theme.colors.danger, bg: theme.colors.dangerLight, label: "Akut" },
-  };
-
-  const statusConfig: Record<string, { color: string; bg: string; label: string }> = {
-    OPEN: { color: theme.colors.accent, bg: theme.colors.accentLight, label: "Öppen" },
-    IN_PROGRESS: { color: "#7c3aed", bg: "#f5f3ff", label: "Pågående" },
-    RESOLVED: { color: theme.colors.success, bg: theme.colors.successLight, label: "Löst" },
-    CLOSED: { color: theme.colors.textMuted, bg: "#f1f5f9", label: "Stängd" },
-  };
-
-  const priority = priorityConfig[ticket.priority] || priorityConfig.MEDIUM;
-  const status = statusConfig[ticket.status] || statusConfig.OPEN;
+  if (!ticket) redirect("/admin/tickets");
 
   return (
-    <div className="app-layout" style={{ display: "flex", minHeight: "100vh" }}>
+    <div className="app-layout flex min-h-screen">
       <Sidebar role="ADMIN" name={dbUser.name} apartment={null} />
       <MobileTopbar title={ticket.title} backHref="/admin/tickets" name={dbUser.name} />
       <MobileNav role="ADMIN" />
 
-      <main className="main-content" style={{ flex: 1, background: theme.colors.background, padding: "32px" }}>
-        <div style={{ maxWidth: "720px" }}>
-          <div style={{ background: theme.colors.card, border: "1px solid #e2e8f0", borderRadius: theme.borderRadius.lg, padding: "24px", marginBottom: "20px" }}>
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "16px", gap: "16px" }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px", flexWrap: "wrap" }}>
-                  <span style={{ fontSize: "11px", color: theme.colors.textMuted, textTransform: "uppercase", letterSpacing: "0.05em" }}>
-                    {ticket.category}
+      <main className="main-content flex-1 bg-background flex flex-col">
+
+        <div className="bg-card border-b border-border px-4 md:px-8 py-4 md:py-5 shrink-0 hidden md:block">
+          <BackButton href="/admin/tickets" label="Alla ärenden" />
+        </div>
+
+        <div className="p-4 md:p-8 flex-1">
+          <div className="max-w-190 mx-auto md:mx-0">
+
+            <div className="bg-card rounded-2xl border border-border overflow-hidden mb-4" style={{ boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}>
+              <div className="px-4 md:px-6 py-3 md:py-4 border-b border-border flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[11px] md:text-[12px] font-semibold text-text-muted bg-background px-2 md:px-3 py-1 rounded-lg">
+                    {categoryLabel(ticket.category)}
                   </span>
-                  <span style={{ fontSize: "10px", fontWeight: 600, color: priority.color, background: priority.bg, padding: "2px 8px", borderRadius: "20px" }}>
-                    {priority.label}
+                  <span style={{ ...priorityBadgeStyle(ticket.priority), fontSize: "11px" }}>
+                    {priorityLabel(ticket.priority)}
                   </span>
                 </div>
-                <h1 style={{ fontSize: "20px", fontWeight: 600, color: theme.colors.textPrimary, margin: "0 0 4px", letterSpacing: "-0.3px" }}>
+                <span style={{ ...statusBadgeStyle(ticket.status), fontSize: "11px" }}>
+                  {statusLabel(ticket.status)}
+                </span>
+              </div>
+
+              <div className="px-4 md:px-6 py-4 md:py-5">
+                <h1 className="text-[17px] md:text-[20px] font-bold text-text-primary m-0 mb-1 tracking-[-0.4px] capitalize">
                   {ticket.title}
                 </h1>
-                <p style={{ fontSize: "12px", color: theme.colors.textMuted, margin: 0 }}>
-                  {ticket.user.name} · {ticket.user.apartment || "Ingen lägenhet"} · {new Date(ticket.createdAt).toLocaleDateString("sv-SE")}
+                <p className="text-[11px] md:text-[12px] text-text-muted m-0 mb-4">
+                  {ticket.user.name}{ticket.user.apartment ? ` · Lgh ${ticket.user.apartment}` : ""}
+                  {` · ${new Date(ticket.createdAt).toLocaleDateString("sv-SE")}`}
                 </p>
+                <p className="text-[13px] md:text-[14px] text-text-secondary m-0 mb-4 leading-[1.7]">
+                  {ticket.description}
+                </p>
+                {ticket.imageUrl && (
+                  <div className="mb-4 rounded-xl overflow-hidden">
+                    <TicketImage path={ticket.imageUrl} />
+                  </div>
+                )}
+                <StatusUpdater
+                  ticketId={ticket.id}
+                  currentStatus={ticket.status}
+                  ticketTitle={ticket.title}
+                  ticketUserId={ticket.userId}
+                />
               </div>
-              <span style={{ fontSize: "11px", fontWeight: 600, color: status.color, background: status.bg, padding: "4px 12px", borderRadius: "20px", whiteSpace: "nowrap", flexShrink: 0 }}>
-                {status.label}
-              </span>
             </div>
 
-            <p style={{ fontSize: "14px", color: theme.colors.textSecondary, margin: "0 0 20px", lineHeight: 1.7 }}>
-              {ticket.description}
-            </p>
-
-            {ticket.imageUrl && (
-              <div style={{ marginBottom: "20px" }}>
-                <TicketImage path={ticket.imageUrl} />
-              </div>
-            )}
-
-            <StatusUpdater ticketId={ticket.id} currentStatus={ticket.status} />
+            <Chat
+              ticketId={ticket.id}
+              currentUserId={dbUser.id}
+              initialMessages={ticket.messages as any}
+            />
           </div>
-
-          <Chat
-            ticketId={ticket.id}
-            currentUserId={dbUser.id}
-            initialMessages={ticket.messages as any}
-          />
         </div>
+
+        <Footer />
       </main>
     </div>
   );

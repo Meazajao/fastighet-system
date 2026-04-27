@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from "react";
 import { io, Socket } from "socket.io-client";
 import { toast } from "sonner";
-import { theme } from "@/lib/theme";
+import { Send } from "lucide-react";
 
 interface Message {
   id: string;
@@ -26,23 +26,21 @@ let socket: Socket;
 
 function groupMessagesByDate(messages: Message[]) {
   const groups: { date: string; messages: Message[] }[] = [];
-
   messages.forEach((msg) => {
     const date = new Date(msg.createdAt).toLocaleDateString("sv-SE", {
       day: "numeric",
       month: "long",
       year: "numeric",
     });
-
     const existing = groups.find((g) => g.date === date);
-    if (existing) {
-      existing.messages.push(msg);
-    } else {
-      groups.push({ date, messages: [msg] });
-    }
+    if (existing) existing.messages.push(msg);
+    else groups.push({ date, messages: [msg] });
   });
-
   return groups;
+}
+
+function getInitials(name: string): string {
+  return name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
 }
 
 export default function Chat({ ticketId, currentUserId, initialMessages }: ChatProps) {
@@ -55,23 +53,16 @@ export default function Chat({ ticketId, currentUserId, initialMessages }: ChatP
 
   useEffect(() => {
     socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3001");
-
     socket.on("connect", () => setConnected(true));
     socket.on("disconnect", () => setConnected(false));
-
     socket.emit("join-ticket", ticketId);
-
     socket.on("new-message", (message: Message) => {
       setMessages((prev) => {
-        const exists = prev.find((m) => m.id === message.id);
-        if (exists) return prev;
+        if (prev.find((m) => m.id === message.id)) return prev;
         return [...prev, message];
       });
     });
-
-    return () => {
-      socket.disconnect();
-    };
+    return () => { socket.disconnect(); };
   }, [ticketId]);
 
   useEffect(() => {
@@ -81,7 +72,6 @@ export default function Chat({ ticketId, currentUserId, initialMessages }: ChatP
   async function handleSend(e: React.FormEvent) {
     e.preventDefault();
     if (!text.trim() || sending) return;
-
     setSending(true);
 
     const res = await fetch(`/api/tickets/${ticketId}/messages`, {
@@ -98,7 +88,6 @@ export default function Chat({ ticketId, currentUserId, initialMessages }: ChatP
     } else {
       toast.error("Kunde inte skicka meddelandet");
     }
-
     setSending(false);
   }
 
@@ -113,140 +102,92 @@ export default function Chat({ ticketId, currentUserId, initialMessages }: ChatP
 
   return (
     <div
-      style={{
-        background: theme.colors.card,
-        border: `1px solid ${theme.colors.border}`,
-        borderRadius: theme.borderRadius.lg,
-        display: "flex",
-        flexDirection: "column",
-        height: "480px",
-      }}
+      className="bg-card rounded-2xl border border-border flex flex-col overflow-hidden"
+      style={{ height: "480px", boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}
     >
       {/* Header */}
-      <div
-        style={{
-          padding: "14px 20px",
-          borderBottom: `1px solid ${theme.colors.border}`,
-          flexShrink: 0,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <h3 style={{ fontSize: "14px", fontWeight: 600, color: theme.colors.textPrimary, margin: 0 }}>
-          Meddelanden
-        </h3>
-        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-          <div style={{
-            width: "7px",
-            height: "7px",
-            borderRadius: "50%",
-            background: connected ? theme.colors.success : theme.colors.textMuted,
-          }} />
-          <span style={{ fontSize: "11px", color: theme.colors.textMuted }}>
+      <div className="px-5 py-3.5 border-b border-border flex items-center justify-between shrink-0">
+        <div className="flex items-center gap-2">
+          <span className="text-[14px] font-bold text-text-primary">Meddelanden</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <div
+            className="w-2 h-2 rounded-full"
+            style={{ background: connected ? "#34c759" : "#aeaeb2" }}
+          />
+          <span className="text-[11px] text-text-muted font-medium">
             {connected ? "Ansluten" : "Ansluter..."}
           </span>
         </div>
       </div>
 
-      {/* Meddelandelista */}
-      <div
-        style={{
-          flex: 1,
-          overflowY: "auto",
-          padding: "16px 20px",
-          display: "flex",
-          flexDirection: "column",
-          gap: "4px",
-        }}
-      >
+      {/* Meddelanden */}
+      <div className="flex-1 overflow-y-auto p-5 flex flex-col gap-1" style={{ background: "#f8f8fc" }}>
         {messages.length === 0 ? (
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flex: 1, gap: "8px" }}>
-            <svg width="24" height="24" viewBox="0 0 24 24" fill={theme.colors.textMuted}>
-              <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/>
-            </svg>
-            <p style={{ fontSize: "13px", color: theme.colors.textMuted, margin: 0 }}>
-              Inga meddelanden ännu
-            </p>
-            <p style={{ fontSize: "11px", color: theme.colors.textDisabled, margin: 0 }}>
-              Skriv ett meddelande för att starta konversationen
-            </p>
+          <div className="flex flex-col items-center justify-center flex-1 gap-2">
+            <div className="w-12 h-12 rounded-2xl flex items-center justify-center" style={{ background: "#f3f0ff" }}>
+              <Send size={20} color="#5e35b1" />
+            </div>
+            <p className="text-[13px] font-semibold text-text-primary m-0">Inga meddelanden ännu</p>
+            <p className="text-[12px] text-text-muted m-0">Skriv ett meddelande nedan</p>
           </div>
         ) : (
           groups.map((group) => (
             <div key={group.date}>
               {/* Datumseparator */}
-              <div style={{
-                display: "flex",
-                alignItems: "center",
-                gap: "12px",
-                margin: "12px 0",
-              }}>
-                <div style={{ flex: 1, height: "1px", background: theme.colors.border }} />
-                <span style={{ fontSize: "11px", color: theme.colors.textMuted, whiteSpace: "nowrap" }}>
+              <div className="flex items-center gap-3 my-4">
+                <div className="flex-1 h-px bg-border" />
+                <span className="text-[11px] text-text-muted font-medium bg-background px-3 py-1 rounded-full">
                   {group.date}
                 </span>
-                <div style={{ flex: 1, height: "1px", background: theme.colors.border }} />
+                <div className="flex-1 h-px bg-border" />
               </div>
 
-              {/* Meddelanden */}
-              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              <div className="flex flex-col gap-3">
                 {group.messages.map((msg) => {
                   const isMe = msg.user.id === currentUserId;
                   return (
-                    <div
-                      key={msg.id}
-                      style={{
-                        display: "flex",
-                        justifyContent: isMe ? "flex-end" : "flex-start",
-                      }}
-                    >
-                      <div style={{ maxWidth: "70%" }}>
+                    <div key={msg.id} className={`flex gap-2 items-end ${isMe ? "justify-end" : "justify-start"}`}>
+                      {!isMe && (
+                        <div
+                          className="w-7 h-7 rounded-full flex items-center justify-center shrink-0"
+                          style={{ background: "linear-gradient(135deg, #5e35b1, #7c4dff)" }}
+                        >
+                          <span className="text-[10px] font-bold text-white">
+                            {getInitials(msg.user.name)}
+                          </span>
+                        </div>
+                      )}
+                      <div className="max-w-[68%]">
                         {!isMe && (
-                          <p style={{
-                            fontSize: "11px",
-                            fontWeight: 600,
-                            color: msg.user.role === "ADMIN" ? theme.colors.accent : theme.colors.textMuted,
-                            margin: "0 0 3px 4px",
-                          }}>
-                            {msg.user.name}
+                          <div className="flex items-center gap-2 mb-1 pl-0.5">
+                            <span className="text-[11px] font-semibold text-text-muted">
+                              {msg.user.name}
+                            </span>
                             {msg.user.role === "ADMIN" && (
-                              <span style={{
-                                marginLeft: "4px",
-                                fontSize: "10px",
-                                background: theme.colors.accentLight,
-                                color: theme.colors.accent,
-                                padding: "1px 5px",
-                                borderRadius: "3px",
-                                fontWeight: 500,
-                              }}>
+                              <span
+                                className="text-[9px] font-bold px-2 py-0.5 rounded-full"
+                                style={{ background: "#f3f0ff", color: "#5e35b1" }}
+                              >
                                 Admin
                               </span>
                             )}
-                          </p>
+                          </div>
                         )}
                         <div
+                          className="px-4 py-2.5 rounded-2xl"
                           style={{
-                            background: isMe ? theme.colors.accent : "#f1f5f9",
-                            borderRadius: isMe ? "12px 12px 2px 12px" : "12px 12px 12px 2px",
-                            padding: "9px 13px",
+                            background: isMe ? "linear-gradient(135deg, #5e35b1, #7c4dff)" : "#fff",
+                            border: isMe ? "none" : "1px solid #ebebf0",
+                            borderBottomRightRadius: isMe ? "6px" : "16px",
+                            borderBottomLeftRadius: isMe ? "16px" : "6px",
+                            boxShadow: isMe ? "0 4px 12px rgba(94,53,177,0.25)" : "0 1px 4px rgba(0,0,0,0.04)",
                           }}
                         >
-                          <p style={{
-                            fontSize: "13px",
-                            color: isMe ? "#fff" : theme.colors.textPrimary,
-                            margin: 0,
-                            lineHeight: 1.5,
-                            wordBreak: "break-word",
-                          }}>
+                          <p className={`text-[13px] m-0 leading-normal wrap-break-word ${isMe ? "text-white" : "text-text-primary"}`}>
                             {msg.text}
                           </p>
-                          <p style={{
-                            fontSize: "10px",
-                            color: isMe ? "rgba(255,255,255,0.65)" : theme.colors.textMuted,
-                            margin: "4px 0 0",
-                            textAlign: isMe ? "right" : "left",
-                          }}>
+                          <p className={`text-[10px] m-0 mt-1 ${isMe ? "text-white/60 text-right" : "text-text-disabled"}`}>
                             {new Date(msg.createdAt).toLocaleTimeString("sv-SE", {
                               hour: "2-digit",
                               minute: "2-digit",
@@ -265,52 +206,36 @@ export default function Chat({ ticketId, currentUserId, initialMessages }: ChatP
       </div>
 
       {/* Input */}
-      <div style={{ padding: "12px 16px", borderTop: `1px solid ${theme.colors.border}`, flexShrink: 0 }}>
-        <form onSubmit={handleSend} style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+      <div className="px-4 py-3 border-t border-border bg-card shrink-0">
+        <form onSubmit={handleSend} className="flex gap-2 items-center">
           <input
             ref={inputRef}
             type="text"
             value={text}
             onChange={(e) => setText(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder="Skriv ett meddelande... (Enter för att skicka)"
+            placeholder="Skriv ett meddelande..."
             maxLength={2000}
-            style={{
-              flex: 1,
-              padding: "10px 14px",
-              background: theme.colors.background,
-              border: `1px solid ${theme.colors.border}`,
-              borderRadius: "20px",
-              fontSize: "13px",
-              outline: "none",
-              color: theme.colors.textPrimary,
-            }}
+            className="flex-1 px-4 py-2.5 bg-background border border-border rounded-xl text-[13px] text-text-primary outline-none font-[inherit] focus:border-primary transition-colors"
           />
           <button
             type="submit"
             disabled={sending || !text.trim()}
+            className="w-10 h-10 rounded-xl flex items-center justify-center border-none transition-all shrink-0"
             style={{
-              width: "38px",
-              height: "38px",
-              background: sending || !text.trim() ? theme.colors.accentBorder : theme.colors.accent,
-              border: "none",
-              borderRadius: "50%",
+              background: sending || !text.trim()
+                ? "#f5f5f7"
+                : "linear-gradient(135deg, #5e35b1, #7c4dff)",
               cursor: sending || !text.trim() ? "not-allowed" : "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              flexShrink: 0,
-              transition: "background 0.2s",
+              boxShadow: sending || !text.trim() ? "none" : "0 4px 12px rgba(94,53,177,0.3)",
             }}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="#fff">
-              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" />
-            </svg>
+            <Send size={15} color={sending || !text.trim() ? "#aeaeb2" : "#fff"} />
           </button>
         </form>
         {text.length > 1800 && (
-          <p style={{ fontSize: "11px", color: text.length > 2000 ? theme.colors.danger : theme.colors.textMuted, margin: "4px 0 0 4px" }}>
-            {text.length}/2000 tecken
+          <p className={`text-[10px] mt-1 ${text.length > 2000 ? "text-danger" : "text-text-muted"}`}>
+            {text.length}/2000
           </p>
         )}
       </div>
