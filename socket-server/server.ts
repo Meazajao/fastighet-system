@@ -3,9 +3,11 @@ import { Server } from "socket.io";
 
 const httpServer = createServer();
 
+const PORT = process.env.PORT || 3001;
+
 const io = new Server(httpServer, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: "*",
     methods: ["GET", "POST"],
   },
 });
@@ -56,6 +58,6 @@ io.on("connection", (socket) => {
   });
 });
 
-httpServer.listen(3001, () => {
-  console.log("Socket.io-server körs på port 3001");
+httpServer.listen(PORT, () => {
+  console.log(`Socket.io-server körs på port ${PORT}`);
 });
