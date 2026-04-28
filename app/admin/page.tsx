@@ -25,10 +25,10 @@ export default async function AdminPage() {
     orderBy: { createdAt: "desc" },
   });
 
-  const open = tickets.filter((t) => t.status === "OPEN").length;
-  const inProgress = tickets.filter((t) => t.status === "IN_PROGRESS").length;
-  const resolved = tickets.filter((t) => t.status === "RESOLVED").length;
-  const urgent = tickets.filter((t) => t.priority === "URGENT").length;
+const open = tickets.filter((t: { status: string }) => t.status === "OPEN").length;
+const inProgress = tickets.filter((t: { status: string }) => t.status === "IN_PROGRESS").length;
+const resolved = tickets.filter((t: { status: string }) => t.status === "RESOLVED").length;
+const urgent = tickets.filter((t: { status: string; priority: string }) => t.priority === "URGENT").length;
 
   const stats = [
     { label: "Totalt", value: tickets.length, icon: <Ticket size={13} color="#5e35b1" />, iconBg: "#f3f0ff", color: "#1a1a2e", highlight: false },
