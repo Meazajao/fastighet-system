@@ -46,11 +46,11 @@ export default async function DashboardPage() {
     orderBy: { createdAt: "desc" },
   });
 
-  const open = tickets.filter((t) => t.status === "OPEN").length;
-  const inProgress = tickets.filter((t) => t.status === "IN_PROGRESS").length;
-  const resolved = tickets.filter((t) => t.status === "RESOLVED").length;
-  const activeTickets = tickets.filter((t) => t.status !== "CLOSED" && t.status !== "RESOLVED");
-  const resolvedTickets = tickets.filter((t) => t.status === "RESOLVED").slice(0, 2);
+const open = tickets.filter((t: { status: string }) => t.status === "OPEN").length;
+const inProgress = tickets.filter((t: { status: string }) => t.status === "IN_PROGRESS").length;
+const resolved = tickets.filter((t: { status: string }) => t.status === "RESOLVED").length;
+const activeTickets = tickets.filter((t: { status: string }) => t.status !== "CLOSED" && t.status !== "RESOLVED");
+const resolvedTickets = tickets.filter((t: { status: string }) => t.status === "RESOLVED").slice(0, 2);
 
   const today = new Date().toLocaleDateString("sv-SE", {
     weekday: "long",
