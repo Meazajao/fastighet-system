@@ -14,6 +14,18 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Mina ärenden" };
 
+interface Ticket {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  priority: string;
+  status: string;
+  createdAt: Date;
+  userId: string;
+  imageUrl: string | null;
+}
+
 export default async function TicketsPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -66,7 +78,7 @@ export default async function TicketsPage() {
             />
           ) : (
             <div className="flex flex-col gap-2 md:gap-3">
-              {tickets.map((ticket) => (
+              {tickets.map((ticket: Ticket) => (
                 <Link
                   key={ticket.id}
                   href={`/tickets/${ticket.id}`}
