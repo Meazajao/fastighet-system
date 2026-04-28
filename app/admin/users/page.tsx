@@ -1,6 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
-import type { User } from "@prisma/client";
 import { redirect } from "next/navigation";
 import Sidebar from "@/components/Sidebar";
 import MobileNav from "@/components/MobileNav";
@@ -42,7 +41,15 @@ export default async function AdminUsersPage() {
           </div>
 
           <div className="flex flex-col gap-2 md:gap-3">
-          {users.map((u: User & { _count: { tickets: number } }) => (
+          {users.map((u: {
+  id: string;
+  name: string;
+  email: string;
+  apartment: string | null;
+  role: string;
+  createdAt: Date;
+  _count: { tickets: number };
+}) => (
   <div
     key={u.id}
     className="flex items-center justify-between bg-card rounded-2xl border border-border px-4 md:px-5 py-3 md:py-4"
