@@ -1,35 +1,44 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { createClient } from "@supabase/supabase-js";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { requireAuth } from "@/lib/api-auth";
 
-const supabaseAdmin = createClient(
+const supabaseAdmin = createAdminClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/gif"];
+const MAX_SIZE = 10 * 1024 * 1024;
+
 export async function POST(req: Request) {
-  const session = await auth();
-  if (!session) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
+  const { error } = await requireAuth();
+  if (error) return error;
 
   const formData = await req.formData();
   const file = formData.get("file") as File;
 
-  if (!file) return NextResponse.json({ error: "Ingen fil" }, { status: 400 });
-
-  if (file.size > 10 * 1024 * 1024) {
-    return NextResponse.json({ error: "Bilden får inte vara större än 10MB" }, { status: 400 });
+  if (!file) {
+    return NextResponse.json({ error: "Ingen fil bifogad" }, { status: 400 });
   }
 
-  const fileName = `${Date.now()}-${file.name}`;
+  if (!ALLOWED_TYPES.includes(file.type)) {
+    return NextResponse.json({ error: "Filtypen stöds inte. Använd JPG, PNG, WebP eller GIF" }, { status: 400 });
+  }
+
+  if (file.size > MAX_SIZE) {
+    return NextResponse.json({ error: "Filen är för stor. Max 10MB tillåtet" }, { status: 400 });
+  }
+
+  const fileName = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`;
   const buffer = await file.arrayBuffer();
 
-  const { error } = await supabaseAdmin.storage
+  const { error: uploadError } = await supabaseAdmin.storage
     .from("ticket-images")
-    .upload(fileName, buffer, {
-      contentType: file.type,
-    });
+    .upload(fileName, buffer, { contentType: file.type });
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (uploadError) {
+    return NextResponse.json({ error: uploadError.message }, { status: 500 });
+  }
 
-  return NextResponse.json({ path: fileName });
+  return NextResponse.json({ path: fileName }, { status: 201 });
 }

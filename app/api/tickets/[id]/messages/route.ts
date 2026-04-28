@@ -1,54 +1,61 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { requireAuth } from "@/lib/api-auth";
 import { sendNotificationEmail } from "@/lib/mail";
 
 export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await auth();
-  if (!session) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
+  const { user, error } = await requireAuth();
+  if (error) return error;
 
   const { id } = await params;
   const { text } = await req.json();
 
-  if (!text) return NextResponse.json({ error: "Tomt meddelande" }, { status: 400 });
+  if (!text || text.trim().length === 0) {
+    return NextResponse.json({ error: "Meddelandet kan inte vara tomt" }, { status: 400 });
+  }
+
+  if (text.length > 2000) {
+    return NextResponse.json({ error: "Meddelandet är för långt (max 2000 tecken)" }, { status: 400 });
+  }
+
+  const ticket = await prisma.ticket.findUnique({
+    where: { id },
+    include: { user: true },
+  });
+
+  if (!ticket) {
+    return NextResponse.json({ error: "Ärendet hittades inte" }, { status: 404 });
+  }
+
+  if (user.role !== "ADMIN" && ticket.userId !== user.id) {
+    return NextResponse.json({ error: "Åtkomst nekad" }, { status: 403 });
+  }
 
   const message = await prisma.message.create({
     data: {
-      text,
+      text: text.trim(),
       ticketId: id,
-      userId: session.user.id,
+      userId: user.id,
     },
     include: { user: true },
   });
 
-  if (session.user.role === "ADMIN") {
-    console.log("Admin skickade meddelande — försöker skicka mail");
-    
-    const ticket = await prisma.ticket.findUnique({
-      where: { id },
-      include: { user: true },
-    });
-
-    console.log("Ticket user email:", ticket?.user?.email);
-
-    if (ticket?.user?.email) {
-      try {
-        await sendNotificationEmail({
-          to: ticket.user.email,
-          userName: ticket.user.name,
-          ticketTitle: ticket.title,
-          ticketId: id,
-          adminMessage: text,
-        });
-        console.log("Mail skickat till:", ticket.user.email);
-      } catch (err) {
-        console.error("Mail kunde inte skickas:", err);
-      }
+  if (user.role === "ADMIN" && ticket.user?.email) {
+    try {
+      await sendNotificationEmail({
+        to: ticket.user.email,
+        userName: ticket.user.name,
+        ticketTitle: ticket.title,
+        ticketId: id,
+        adminMessage: text,
+      });
+    } catch (err) {
+      console.error("Mail kunde inte skickas:", err);
     }
   }
 
-  return NextResponse.json(message);
+  return NextResponse.json(message, { status: 201 });
 }

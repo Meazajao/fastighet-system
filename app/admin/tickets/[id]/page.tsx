@@ -1,126 +1,97 @@
-import { auth } from "@/lib/auth";
+import { createClient } from "@/lib/supabase/server";
 import { prisma } from "@/lib/prisma";
 import { redirect } from "next/navigation";
-import Link from "next/link";
+import Sidebar from "@/components/Sidebar";
+import MobileNav from "@/components/MobileNav";
+import MobileTopbar from "@/components/MobileTopbar";
 import Chat from "@/components/chat/Chat";
 import StatusUpdater from "@/components/tickets/StatusUpdater";
 import TicketImage from "@/components/tickets/TicketImage";
+import BackButton from "@/components/ui/BackButton";
+import Footer from "@/components/ui/Footer";
+import { statusBadgeStyle, statusLabel, priorityBadgeStyle, priorityLabel, categoryLabel } from "@/lib/styles";
 
-export default async function AdminTicketPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const session = await auth();
-  if (session?.user?.role !== "ADMIN") redirect("/dashboard");
+export default async function AdminTicketPage({ params }: { params: Promise<{ id: string }> }) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  const dbUser = await prisma.user.findUnique({ where: { email: user.email! } });
+  if (dbUser?.role !== "ADMIN") redirect("/dashboard");
 
   const { id } = await params;
-
   const ticket = await prisma.ticket.findUnique({
     where: { id },
-    include: {
-      user: true,
-      messages: {
-        include: { user: true },
-        orderBy: { createdAt: "asc" },
-      },
-    },
+    include: { user: true, messages: { include: { user: true }, orderBy: { createdAt: "asc" } } },
   });
 
-  if (!ticket) redirect("/admin");
+  if (!ticket) redirect("/admin/tickets");
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white border-b border-gray-100 px-6 py-4 flex items-center justify-between">
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 bg-violet-600 rounded-lg" />
-          <span className="font-semibold text-gray-900">Fastighet</span>
-          <span className="text-xs bg-violet-100 text-violet-600 font-medium px-2 py-0.5 rounded-full">
-            Admin
-          </span>
-        </div>
-        <Link
-          href="/admin"
-          className="text-sm text-gray-500 hover:text-gray-900 transition"
-        >
-          ← Tillbaka
-        </Link>
-      </nav>
+    <div className="app-layout flex min-h-screen">
+      <Sidebar role="ADMIN" name={dbUser.name} apartment={null} />
+      <MobileTopbar title={ticket.title} backHref="/admin/tickets" name={dbUser.name} />
+      <MobileNav role="ADMIN" />
 
-      <div className="max-w-2xl mx-auto px-6 py-10 space-y-6">
-        <div className="bg-white rounded-2xl border border-gray-100 p-6">
-          <div className="flex items-start justify-between mb-4">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-xs font-medium text-gray-400 uppercase">
-                  {ticket.category}
+      <main className="main-content flex-1 bg-background flex flex-col">
+
+        <div className="bg-card border-b border-border px-4 md:px-8 py-4 md:py-5 shrink-0 hidden md:block">
+          <BackButton href="/admin/tickets" label="Alla ärenden" />
+        </div>
+
+        <div className="p-4 md:p-8 flex-1">
+          <div className="max-w-190 mx-auto md:mx-0">
+
+            <div className="bg-card rounded-2xl border border-border overflow-hidden mb-4" style={{ boxShadow: "0 1px 8px rgba(0,0,0,0.05)" }}>
+              <div className="px-4 md:px-6 py-3 md:py-4 border-b border-border flex items-center justify-between flex-wrap gap-2">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-[11px] md:text-[12px] font-semibold text-text-muted bg-background px-2 md:px-3 py-1 rounded-lg">
+                    {categoryLabel(ticket.category)}
+                  </span>
+                  <span style={{ ...priorityBadgeStyle(ticket.priority), fontSize: "11px" }}>
+                    {priorityLabel(ticket.priority)}
+                  </span>
+                </div>
+                <span style={{ ...statusBadgeStyle(ticket.status), fontSize: "11px" }}>
+                  {statusLabel(ticket.status)}
                 </span>
-                <PriorityBadge priority={ticket.priority} />
               </div>
-              <h1 className="text-xl font-semibold text-gray-900">
-                {ticket.title}
-              </h1>
-              <p className="text-xs text-gray-400 mt-1">
-                {ticket.user.name} · {ticket.user.apartment || "Ingen lägenhet"} ·{" "}
-                {new Date(ticket.createdAt).toLocaleDateString("sv-SE")}
-              </p>
+
+              <div className="px-4 md:px-6 py-4 md:py-5">
+                <h1 className="text-[17px] md:text-[20px] font-bold text-text-primary m-0 mb-1 tracking-[-0.4px] capitalize">
+                  {ticket.title}
+                </h1>
+                <p className="text-[11px] md:text-[12px] text-text-muted m-0 mb-4">
+                  {ticket.user.name}{ticket.user.apartment ? ` · Lgh ${ticket.user.apartment}` : ""}
+                  {` · ${new Date(ticket.createdAt).toLocaleDateString("sv-SE")}`}
+                </p>
+                <p className="text-[13px] md:text-[14px] text-text-secondary m-0 mb-4 leading-[1.7]">
+                  {ticket.description}
+                </p>
+                {ticket.imageUrl && (
+                  <div className="mb-4 rounded-xl overflow-hidden">
+                    <TicketImage path={ticket.imageUrl} />
+                  </div>
+                )}
+                <StatusUpdater
+                  ticketId={ticket.id}
+                  currentStatus={ticket.status}
+                  ticketTitle={ticket.title}
+                  ticketUserId={ticket.userId}
+                />
+              </div>
             </div>
-            <StatusBadge status={ticket.status} />
+
+            <Chat
+              ticketId={ticket.id}
+              currentUserId={dbUser.id}
+              initialMessages={ticket.messages as any}
+            />
           </div>
-          <p className="text-gray-600 text-sm leading-relaxed mb-6">
-            {ticket.description}
-          </p>
-          {ticket.imageUrl && (
-  <div className="mt-4 mb-6">
-    <TicketImage path={ticket.imageUrl} />
-  </div>
-)}
-          <StatusUpdater ticketId={ticket.id} currentStatus={ticket.status} />
         </div>
 
-        <Chat
-          ticketId={ticket.id}
-          currentUserId={session.user.id}
-          initialMessages={ticket.messages as any}
-        />
-      </div>
+        <Footer />
+      </main>
     </div>
-  );
-}
-
-function StatusBadge({ status }: { status: string }) {
-  const styles: Record<string, string> = {
-    OPEN: "bg-blue-50 text-blue-600",
-    IN_PROGRESS: "bg-violet-50 text-violet-600",
-    RESOLVED: "bg-green-50 text-green-600",
-    CLOSED: "bg-gray-100 text-gray-500",
-  };
-  const labels: Record<string, string> = {
-    OPEN: "Öppen",
-    IN_PROGRESS: "Pågående",
-    RESOLVED: "Löst",
-    CLOSED: "Stängd",
-  };
-  return (
-    <span className={`text-xs font-medium px-3 py-1 rounded-full ${styles[status]}`}>
-      {labels[status]}
-    </span>
-  );
-}
-
-function PriorityBadge({ priority }: { priority: string }) {
-  if (priority !== "URGENT" && priority !== "HIGH") return null;
-  const styles: Record<string, string> = {
-    URGENT: "bg-red-50 text-red-500",
-    HIGH: "bg-orange-50 text-orange-500",
-  };
-  const labels: Record<string, string> = {
-    URGENT: "Akut",
-    HIGH: "Hög",
-  };
-  return (
-    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${styles[priority]}`}>
-      {labels[priority]}
-    </span>
   );
 }

@@ -5,10 +5,9 @@ import { useEffect, useState } from "react";
 export default function TicketImage({ path }: { path: string }) {
   const [url, setUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    console.log("TicketImage - hämtar signerad URL för:", path);
-    
     fetch("/api/storage/signed-url", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -16,34 +15,40 @@ export default function TicketImage({ path }: { path: string }) {
     })
       .then((res) => res.json())
       .then((data) => {
-        console.log("TicketImage - svar:", data);
-        if (data.url) {
-          setUrl(data.url);
-        } else {
-          setError(data.error);
-        }
+        if (data.url) setUrl(data.url);
+        else setError("Kunde inte ladda bilden");
       })
-      .catch((err) => {
-        console.error("TicketImage - fel:", err);
-        setError(err.message);
-      });
+      .catch(() => setError("Nätverksfel"))
+      .finally(() => setLoading(false));
   }, [path]);
 
-  if (error) return (
-    <div className="w-full p-4 bg-red-50 text-red-500 text-sm rounded-xl mt-4">
-      Kunde inte ladda bilden: {error}
-    </div>
-  );
+  if (loading) {
+    return (
+      <div
+        className="w-full h-50 bg-background"
+        style={{
+          background: "linear-gradient(90deg, #f4f5f7 25%, #dce0e8 50%, #f4f5f7 75%)",
+          backgroundSize: "200% 100%",
+          animation: "skeleton-shimmer 1.5s infinite",
+        }}
+      />
+    );
+  }
 
-  if (!url) return (
-    <div className="w-full h-48 bg-gray-100 rounded-xl animate-pulse mt-4" />
-  );
+  if (error) {
+    return (
+      <div className="w-full px-4 py-3 bg-danger-light border border-danger-border text-[12px] text-danger text-center">
+        {error}
+      </div>
+    );
+  }
 
   return (
     <img
-      src={url}
+      src={url!}
       alt="Bifogad bild"
-      className="w-full max-h-64 object-cover rounded-xl border border-gray-100 mt-4"
+      loading="lazy"
+      className="w-full max-h-80 object-cover block border border-border"
     />
   );
 }

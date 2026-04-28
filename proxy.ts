@@ -1,54 +1,50 @@
-import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
-import { getToken } from "next-auth/jwt";
+import { createServerClient } from "@supabase/ssr";
+import { NextResponse, type NextRequest } from "next/server";
 
-export async function proxy(req: NextRequest) {
-  const token = await getToken({
-    req,
-    secret: process.env.NEXTAUTH_SECRET,
-  });
+export async function proxy(request: NextRequest) {
+  let supabaseResponse = NextResponse.next({ request });
 
-  const { pathname } = req.nextUrl;
-
-  if (pathname.startsWith("/dashboard") && token?.role === "ADMIN") {
-    return NextResponse.redirect(new URL("/admin", req.url));
-  }
-
-  if (pathname.startsWith("/login") || pathname.startsWith("/register")) {
-    if (token) {
-      if (token.role === "ADMIN") {
-        return NextResponse.redirect(new URL("/admin", req.url));
-      }
-      return NextResponse.redirect(new URL("/dashboard", req.url));
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          );
+          supabaseResponse = NextResponse.next({ request });
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          );
+        },
+      },
     }
-    return NextResponse.next();
+  );
+
+  const { data: { user } } = await supabase.auth.getUser();
+  const { pathname } = request.nextUrl;
+
+  if (!user && !pathname.startsWith("/login") && !pathname.startsWith("/register")) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    return NextResponse.redirect(url);
   }
 
-  if (!token) {
-    return NextResponse.redirect(new URL("/login", req.url));
+  if (user && (pathname.startsWith("/login") || pathname.startsWith("/register"))) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/dashboard";
+    return NextResponse.redirect(url);
   }
 
-  if (pathname.startsWith("/admin") && token?.role !== "ADMIN") {
-    return NextResponse.redirect(new URL("/dashboard", req.url));
-  }
-
-  if (pathname === "/") {
-    if (token?.role === "ADMIN") {
-      return NextResponse.redirect(new URL("/admin", req.url));
-    }
-    return NextResponse.redirect(new URL("/dashboard", req.url));
-  }
-
-  return NextResponse.next();
+  return supabaseResponse;
 }
 
 export const config = {
   matcher: [
-    "/",
-    "/dashboard/:path*",
-    "/tickets/:path*",
-    "/admin/:path*",
-    "/login",
-    "/register",
+    "/((?!_next/static|_next/image|favicon.ico|api|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)",
   ],
 };

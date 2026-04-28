@@ -1,23 +1,29 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
-import { createClient } from "@supabase/supabase-js";
+import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { requireAuth } from "@/lib/api-auth";
 
-const supabaseAdmin = createClient(
+const supabaseAdmin = createAdminClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
 export async function POST(req: Request) {
-  const session = await auth();
-  if (!session) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
+  const { error } = await requireAuth();
+  if (error) return error;
 
   const { path } = await req.json();
 
-  const { data, error } = await supabaseAdmin.storage
+  if (!path || typeof path !== "string") {
+    return NextResponse.json({ error: "Ogiltig filsökväg" }, { status: 400 });
+  }
+
+  const { data, error: signedError } = await supabaseAdmin.storage
     .from("ticket-images")
     .createSignedUrl(path, 3600);
 
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  if (signedError) {
+    return NextResponse.json({ error: signedError.message }, { status: 500 });
+  }
 
   return NextResponse.json({ url: data.signedUrl });
 }

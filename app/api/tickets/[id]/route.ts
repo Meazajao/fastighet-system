@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
-import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { requireAuth, requireAdmin } from "@/lib/api-auth";
 
 export async function GET(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await auth();
-  if (!session) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
+  const { user, error } = await requireAuth();
+  if (error) return error;
 
   const { id } = await params;
 
@@ -22,7 +22,13 @@ export async function GET(
     },
   });
 
-  if (!ticket) return NextResponse.json({ error: "Ej hittad" }, { status: 404 });
+  if (!ticket) {
+    return NextResponse.json({ error: "Ärendet hittades inte" }, { status: 404 });
+  }
+
+  if (user.role !== "ADMIN" && ticket.userId !== user.id) {
+    return NextResponse.json({ error: "Åtkomst nekad" }, { status: 403 });
+  }
 
   return NextResponse.json(ticket);
 }
@@ -31,12 +37,16 @@ export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await auth();
-  if (!session) return NextResponse.json({ error: "Ej inloggad" }, { status: 401 });
-  if (session.user.role !== "ADMIN") return NextResponse.json({ error: "Ej behörig" }, { status: 403 });
+  const { error } = await requireAdmin();
+  if (error) return error;
 
   const { id } = await params;
   const { status } = await req.json();
+
+  const validStatuses = ["OPEN", "IN_PROGRESS", "RESOLVED", "CLOSED"];
+  if (!validStatuses.includes(status)) {
+    return NextResponse.json({ error: "Ogiltig status" }, { status: 400 });
+  }
 
   const ticket = await prisma.ticket.update({
     where: { id },
@@ -44,4 +54,18 @@ export async function PATCH(
   });
 
   return NextResponse.json(ticket);
+}
+
+export async function DELETE(
+  req: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { error } = await requireAdmin();
+  if (error) return error;
+
+  const { id } = await params;
+
+  await prisma.ticket.delete({ where: { id } });
+
+  return NextResponse.json({ success: true });
 }
