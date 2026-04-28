@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { theme } from "@/lib/theme";
 
 export default function TicketImage({ path }: { path: string }) {
   const [url, setUrl] = useState<string | null>(null);
@@ -16,11 +15,8 @@ export default function TicketImage({ path }: { path: string }) {
     })
       .then((res) => res.json())
       .then((data) => {
-        if (data.url) {
-          setUrl(data.url);
-        } else {
-          setError("Kunde inte ladda bilden");
-        }
+        if (data.url) setUrl(data.url);
+        else setError("Kunde inte ladda bilden");
       })
       .catch(() => setError("Nätverksfel"))
       .finally(() => setLoading(false));
@@ -29,13 +25,11 @@ export default function TicketImage({ path }: { path: string }) {
   if (loading) {
     return (
       <div
+        className="w-full h-50 bg-background"
         style={{
-          width: "100%",
-          height: "200px",
-          background: "linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%)",
+          background: "linear-gradient(90deg, #f4f5f7 25%, #dce0e8 50%, #f4f5f7 75%)",
           backgroundSize: "200% 100%",
           animation: "skeleton-shimmer 1.5s infinite",
-          borderRadius: theme.borderRadius.md,
         }}
       />
     );
@@ -43,18 +37,7 @@ export default function TicketImage({ path }: { path: string }) {
 
   if (error) {
     return (
-      <div
-        style={{
-          width: "100%",
-          padding: "16px",
-          background: theme.colors.dangerLight,
-          border: `1px solid ${theme.colors.dangerBorder}`,
-          borderRadius: theme.borderRadius.md,
-          fontSize: "13px",
-          color: theme.colors.danger,
-          textAlign: "center",
-        }}
-      >
+      <div className="w-full px-4 py-3 bg-danger-light border border-danger-border text-[12px] text-danger text-center">
         {error}
       </div>
     );
@@ -65,14 +48,7 @@ export default function TicketImage({ path }: { path: string }) {
       src={url!}
       alt="Bifogad bild"
       loading="lazy"
-      style={{
-        width: "100%",
-        maxHeight: "320px",
-        objectFit: "cover",
-        borderRadius: theme.borderRadius.md,
-        border: `1px solid ${theme.colors.border}`,
-        display: "block",
-      }}
+      className="w-full max-h-80 object-cover block border border-border"
     />
   );
 }

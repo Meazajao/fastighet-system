@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import { theme } from "@/lib/theme";
 
 interface PageErrorProps {
   error: Error & { digest?: string };
@@ -14,60 +13,40 @@ export default function PageError({ error, reset }: PageErrorProps) {
   }, [error]);
 
   return (
-    <div className="app-layout" style={{ display: "flex", minHeight: "100vh" }}>
-      <div
-        className="sidebar"
-        style={{ width: "220px", minHeight: "100vh", background: "#0a1628", flexShrink: 0 }}
-      />
-      <main
-        className="main-content"
-        style={{ flex: 1, background: theme.colors.background, padding: "32px", display: "flex", alignItems: "center", justifyContent: "center" }}
-      >
-        <div style={{ textAlign: "center", maxWidth: "480px" }}>
-          <div
-            style={{
-              width: "48px",
-              height: "48px",
-              background: theme.colors.dangerLight,
-              border: `1px solid ${theme.colors.dangerBorder}`,
-              borderRadius: "50%",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              margin: "0 auto 16px",
-            }}
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill={theme.colors.danger}>
+    <div className="app-layout flex min-h-screen">
+      <div className="sidebar w-55 min-h-screen bg-sidebar shrink-0" />
+      <main className="main-content flex-1 bg-background flex items-center justify-center p-8">
+        <div className="text-center max-w-120">
+          <div className="w-12 h-12 bg-danger-light border border-danger-border rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="#a32d2d">
               <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
             </svg>
           </div>
 
-          <h2 style={{ fontSize: "20px", fontWeight: 600, color: theme.colors.textPrimary, margin: "0 0 8px", letterSpacing: "-0.3px" }}>
+          <h2 className="text-[18px] font-medium text-text-primary m-0 mb-2 tracking-[-0.3px]">
             Sidan kunde inte laddas
           </h2>
-          <p style={{ fontSize: "13px", color: theme.colors.textMuted, margin: "0 0 24px", lineHeight: 1.6 }}>
-            Ett fel uppstod när sidan skulle laddas. Försök igen eller kontakta support om problemet kvarstår.
+          <p className="text-[12px] text-text-muted m-0 mb-6 leading-[1.6]">
+            Ett fel uppstod. Försök igen eller kontakta support om problemet kvarstår.
           </p>
 
           {process.env.NODE_ENV === "development" && (
-            <div style={{ background: theme.colors.dangerLight, border: `1px solid ${theme.colors.dangerBorder}`, borderRadius: theme.borderRadius.md, padding: "12px 16px", marginBottom: "24px", textAlign: "left" }}>
-              <p style={{ fontSize: "11px", fontWeight: 600, color: theme.colors.danger, margin: "0 0 4px" }}>Dev error</p>
-              <p style={{ fontSize: "11px", color: theme.colors.danger, margin: 0, fontFamily: "monospace", wordBreak: "break-all" }}>
-                {error.message}
-              </p>
+            <div className="bg-danger-light border border-danger-border px-4 py-3 mb-6 text-left">
+              <p className="text-[9px] font-medium text-danger m-0 mb-1 uppercase tracking-[0.05em]">Dev error</p>
+              <p className="text-[11px] text-danger m-0 font-mono break-all">{error.message}</p>
             </div>
           )}
 
-          <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
+          <div className="flex gap-2 justify-center">
             <button
               onClick={reset}
-              style={{ padding: "10px 20px", background: theme.colors.accent, border: "none", borderRadius: theme.borderRadius.md, fontSize: "14px", fontWeight: 600, color: "#fff", cursor: "pointer" }}
+              className="px-4 py-2 bg-sidebar text-white text-[11px] font-medium uppercase tracking-[0.3px] border-none cursor-pointer hover:bg-sidebar-dark transition-colors font-[inherit]"
             >
               Försök igen
             </button>
             <button
               onClick={() => window.location.href = "/dashboard"}
-              style={{ padding: "10px 20px", background: "transparent", border: `1px solid ${theme.colors.border}`, borderRadius: theme.borderRadius.md, fontSize: "14px", fontWeight: 600, color: theme.colors.textSecondary, cursor: "pointer" }}
+              className="px-4 py-2 bg-card border border-border text-[11px] text-text-muted font-medium uppercase tracking-[0.3px] cursor-pointer hover:bg-background transition-colors font-[inherit]"
             >
               Startsidan
             </button>

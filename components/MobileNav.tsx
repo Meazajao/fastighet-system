@@ -2,14 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { theme } from "@/lib/theme";
-
-interface NavItem {
-  href: string;
-  label: string;
-  icon: (active: boolean) => React.ReactElement;
-  special?: boolean;
-}
+import { LayoutDashboard, FileText, Plus, Users, LogOut } from "lucide-react";
 
 interface MobileNavProps {
   role: "TENANT" | "ADMIN";
@@ -18,141 +11,75 @@ interface MobileNavProps {
 export default function MobileNav({ role }: MobileNavProps) {
   const pathname = usePathname();
 
-  const tenantItems: NavItem[] = [
-    {
-      href: "/dashboard",
-      label: "Hem",
-      icon: (active) => (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill={active ? theme.colors.accent : "#94a3b8"}>
-          <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
-        </svg>
-      ),
-    },
-    {
-      href: "/tickets",
-      label: "Ärenden",
-      icon: (active) => (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill={active ? theme.colors.accent : "#94a3b8"}>
-          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H7v-2h5v2zm5-4H7v-2h10v2zm0-4H7V7h10v2z" />
-        </svg>
-      ),
-    },
-    {
-      href: "/tickets/new",
-      label: "Nytt",
-      special: true,
-      icon: (active) => (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill={active ? "#fff" : "#fff"}>
-          <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
-        </svg>
-      ),
-    },
-    {
-      href: "/api/auth/signout",
-      label: "Logga ut",
-      icon: (_active) => (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="#94a3b8">
-          <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" />
-        </svg>
-      ),
-    },
+  const tenantItems: { href: string; label: string; icon: React.ElementType; special?: boolean }[] = [
+    { href: "/dashboard", label: "Översikt", icon: LayoutDashboard },
+    { href: "/tickets", label: "Ärenden", icon: FileText },
+    { href: "/tickets/new", label: "Nytt", icon: Plus, special: true },
+    { href: "/api/auth/signout", label: "Logga ut", icon: LogOut },
   ];
-
-  const adminItems: NavItem[] = [
-    {
-      href: "/admin",
-      label: "Översikt",
-      icon: (active) => (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill={active ? theme.colors.accent : "#94a3b8"}>
-          <path d="M3 13h8V3H3v10zm0 8h8v-6H3v6zm10 0h8V11h-8v10zm0-18v6h8V3h-8z" />
-        </svg>
-      ),
-    },
-    {
-      href: "/admin/tickets",
-      label: "Ärenden",
-      icon: (active) => (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill={active ? theme.colors.accent : "#94a3b8"}>
-          <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 14H7v-2h5v2zm5-4H7v-2h10v2zm0-4H7V7h10v2z" />
-        </svg>
-      ),
-    },
-    {
-      href: "/admin/users",
-      label: "Användare",
-      icon: (active) => (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill={active ? theme.colors.accent : "#94a3b8"}>
-          <path d="M16 11c1.66 0 2.99-1.34 2.99-3S17.66 5 16 5c-1.66 0-3 1.34-3 3s1.34 3 3 3zm-8 0c1.66 0 2.99-1.34 2.99-3S9.66 5 8 5C6.34 5 5 6.34 5 8s1.34 3 3 3zm0 2c-2.33 0-7 1.17-7 3.5V19h14v-2.5c0-2.33-4.67-3.5-7-3.5zm8 0c-.29 0-.62.02-.97.05 1.16.84 1.97 1.97 1.97 3.45V19h6v-2.5c0-2.33-4.67-3.5-7-3.5z" />
-        </svg>
-      ),
-    },
-    {
-      href: "/api/auth/signout",
-      label: "Logga ut",
-      icon: (_active) => (
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="#94a3b8">
-          <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z" />
-        </svg>
-      ),
-    },
+  
+  const adminItems: { href: string; label: string; icon: React.ElementType; special?: boolean }[] = [
+    { href: "/admin", label: "Översikt", icon: LayoutDashboard },
+    { href: "/admin/tickets", label: "Ärenden", icon: FileText },
+    { href: "/admin/users", label: "Användare", icon: Users },
+    { href: "/api/auth/signout", label: "Logga ut", icon: LogOut },
   ];
 
   const items = role === "ADMIN" ? adminItems : tenantItems;
 
   return (
     <div
-      className="mobile-bottom-nav"
+      className="mobile-bottom-nav hidden fixed bottom-0 left-0 right-0 z-100 bg-white border-t border-gray-100 px-2 pb-safe"
       style={{
-        display: "none",
-        position: "fixed",
-        bottom: 0,
-        left: 0,
-        right: 0,
-        zIndex: 100,
-        background: "#fff",
-        borderTop: "1px solid #f1f5f9",
-        padding: "8px 0 12px",
         gridTemplateColumns: `repeat(${items.length}, 1fr)`,
-        textAlign: "center",
+        boxShadow: "0 -1px 12px rgba(0,0,0,0.06)",
+        paddingBottom: "max(12px, env(safe-area-inset-bottom))",
+        paddingTop: "8px",
       }}
     >
       {items.map((item) => {
         const isActive = pathname === item.href;
+        const Icon = item.icon;
+
+        if (item.special) {
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              className="flex flex-col items-center gap-1 no-underline"
+            >
+              <div
+                className="w-12 h-12 rounded-2xl flex items-center justify-center -mt-6"
+                style={{
+                  background: "linear-gradient(135deg, #5e35b1, #7c4dff)",
+                  boxShadow: "0 4px 16px rgba(94,53,177,0.4)",
+                }}
+              >
+                <Icon size={20} color="#fff" />
+              </div>
+              <span className="text-[10px] font-semibold" style={{ color: "#5e35b1" }}>
+                {item.label}
+              </span>
+            </Link>
+          );
+        }
+
         return (
           <Link
             key={item.href}
             href={item.href}
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              gap: "3px",
-              textDecoration: "none",
-              padding: "4px 0",
-            }}
+            className="flex flex-col items-center gap-1 no-underline py-1"
           >
-            {item.special ? (
-              <div style={{
-                width: "36px",
-                height: "36px",
-                background: theme.colors.accent,
-                borderRadius: "50%",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                marginTop: "-16px",
-                boxShadow: "0 4px 12px rgba(14,165,233,0.4)",
-              }}>
-                {item.icon(isActive)}
-              </div>
-            ) : (
-              item.icon(isActive)
-            )}
-            <span style={{
-              fontSize: "10px",
-              color: isActive ? theme.colors.accent : "#94a3b8",
-              fontWeight: isActive ? 600 : 400,
-            }}>
+            <div
+              className="w-8 h-8 rounded-xl flex items-center justify-center transition-all"
+              style={{ background: isActive ? "#f3f0ff" : "transparent" }}
+            >
+              <Icon size={18} color={isActive ? "#5e35b1" : "#aeaeb2"} />
+            </div>
+            <span
+              className="text-[10px] font-semibold"
+              style={{ color: isActive ? "#5e35b1" : "#aeaeb2" }}
+            >
               {item.label}
             </span>
           </Link>

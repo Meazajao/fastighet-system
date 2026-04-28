@@ -1,36 +1,24 @@
-import { getInitials } from "@/lib/utils";
-import { theme } from "@/lib/theme";
-
-interface AvatarProps {
-  name: string;
-  size?: number;
-  fontSize?: number;
-}
-
-export default function Avatar({ name, size = 32, fontSize = 11 }: AvatarProps) {
-  return (
-    <div
-      style={{
-        width: `${size}px`,
-        height: `${size}px`,
-        background: theme.colors.accentLight,
-        border: `1px solid ${theme.colors.accentBorder}`,
-        borderRadius: "50%",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        flexShrink: 0,
-      }}
-    >
-      <span
-        style={{
-          fontSize: `${fontSize}px`,
-          fontWeight: 600,
-          color: theme.colors.accent,
-        }}
-      >
-        {getInitials(name)}
-      </span>
-    </div>
-  );
-}
+function getInitials(name: string): string {
+    return name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+  }
+  
+  interface AvatarProps {
+    name: string;
+    size?: "sm" | "md" | "lg";
+  }
+  
+  export default function Avatar({ name, size = "md" }: AvatarProps) {
+    const sizes = {
+      sm: "w-[22px] h-[22px] text-[9px]",
+      md: "w-[32px] h-[32px] text-[11px]",
+      lg: "w-[40px] h-[40px] text-[14px]",
+    };
+  
+    return (
+      <div className={`${sizes[size]} bg-accent-light border border-accent-border rounded-full flex items-center justify-center shrink-0`}>
+        <span className="font-medium text-accent">
+          {getInitials(name)}
+        </span>
+      </div>
+    );
+  }

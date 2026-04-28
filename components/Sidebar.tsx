@@ -2,203 +2,175 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
-import { theme } from "@/lib/theme";
-import { getInitials } from "@/lib/utils";
+import Image from "next/image";
+import { LayoutDashboard, FileText, Plus, Users, Settings, LogOut, Home } from "lucide-react";
 
 interface SidebarProps {
   role: "TENANT" | "ADMIN";
   name: string;
   apartment?: string | null;
+  cityImage?: boolean;
 }
 
-export default function Sidebar({ role, name, apartment }: SidebarProps) {
+function getInitials(name: string): string {
+  return name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+}
+
+export default function Sidebar({ role, name, apartment, cityImage = false }: SidebarProps) {
   const pathname = usePathname();
-  const [menuOpen, setMenuOpen] = useState(false);
 
   const tenantLinks = [
-    { href: "/dashboard", label: "Översikt" },
-    { href: "/tickets", label: "Mina ärenden" },
-    { href: "/tickets/new", label: "+ Nytt ärende" },
+    { href: "/dashboard", label: "Översikt", icon: LayoutDashboard },
+    { href: "/tickets", label: "Mina ärenden", icon: FileText },
+    { href: "/tickets/new", label: "Nytt ärende", icon: Plus },
   ];
 
   const adminLinks = [
-    { href: "/admin", label: "Översikt" },
-    { href: "/admin/tickets", label: "Alla ärenden" },
-    { href: "/admin/users", label: "Användare" },
+    { href: "/admin", label: "Översikt", icon: LayoutDashboard },
+    { href: "/admin/tickets", label: "Alla ärenden", icon: FileText },
+    { href: "/admin/users", label: "Användare", icon: Users },
   ];
 
   const links = role === "ADMIN" ? adminLinks : tenantLinks;
-  const initials = getInitials(name);
 
   return (
-    <>
-      {/* Desktop sidebar */}
-      <div
-        className="sidebar"
-        style={{
-          width: "220px",
-          minHeight: "100vh",
-          background: theme.colors.sidebar,
-          padding: "20px 16px",
-          display: "flex",
-          flexDirection: "column",
-          flexShrink: 0,
-          position: "sticky",
-          top: 0,
-          height: "100vh",
-        }}
-      >
-        {/* Logo */}
-        <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "32px" }}>
-          <div style={{ width: "32px", height: "32px", background: theme.colors.accent, borderRadius: "9px", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-            <div style={{ width: "16px", height: "16px", background: "#fff", borderRadius: "3px" }} />
+    <div className="sidebar w-55 min-h-screen flex flex-col shrink-0 sticky top-0 h-screen bg-card border-r border-border">
+
+      {/* Logo */}
+      <div className="px-5 py-6 border-b border-border">
+        <div className="flex items-center gap-3">
+          <div
+            className="w-9 h-9 flex items-center justify-center rounded-xl shrink-0"
+            style={{
+              background: "linear-gradient(135deg, #5e35b1, #7c4dff)",
+              boxShadow: "0 4px 10px rgba(94,53,177,0.3)",
+            }}
+          >
+            <Home size={16} color="#fff" />
           </div>
           <div>
-            <span style={{ fontSize: "14px", fontWeight: 600, color: theme.colors.sidebarTextActive, letterSpacing: "-0.2px" }}>
+            <div className="text-[15px] font-bold text-text-primary tracking-[-0.3px]">
               Fastighet
-            </span>
-            {role === "ADMIN" && (
-              <span style={{ display: "block", fontSize: "9px", color: theme.colors.accent, background: `${theme.colors.accent}20`, padding: "1px 6px", borderRadius: "4px", marginTop: "2px", width: "fit-content" }}>
-                Admin
-              </span>
-            )}
+            </div>
+            <div className="text-[10px] text-text-muted mt-0.5 font-medium">
+              Stockholm Stad
+            </div>
           </div>
         </div>
+      </div>
 
-        <p className="sidebar-section-label" style={{ fontSize: "9px", color: "#2d5478", margin: "0 0 8px", textTransform: "uppercase", letterSpacing: "0.1em", padding: "0 10px" }}>
-          {role === "ADMIN" ? "Hantera" : "Navigering"}
-        </p>
+      {/* Nav */}
+      <div className="p-3 flex-1">
+        <div className="text-[10px] text-text-disabled uppercase tracking-widest px-3 mb-2 font-semibold">
+          {role === "ADMIN" ? "Hantera" : "Navigation"}
+        </div>
 
-        <nav className="sidebar-nav" style={{ display: "flex", flexDirection: "column", gap: "2px" }}>
+        <nav className="flex flex-col gap-1">
           {links.map((link) => {
             const isActive = pathname === link.href;
+            const Icon = link.icon;
             return (
               <Link
                 key={link.href}
                 href={link.href}
+                className="flex items-center gap-3 px-3 py-2.5 rounded-xl no-underline transition-all duration-150"
                 style={{
-                  padding: "8px 10px",
-                  borderRadius: theme.borderRadius.sm,
-                  fontSize: "13px",
-                  fontWeight: isActive ? 500 : 400,
-                  color: isActive ? theme.colors.sidebarTextActive : theme.colors.sidebarTextInactive,
-                  background: isActive ? `${theme.colors.accent}18` : "transparent",
-                  borderLeft: isActive ? `2px solid ${theme.colors.accent}` : "2px solid transparent",
-                  textDecoration: "none",
-                  transition: "all 0.15s",
-                  display: "block",
+                  background: isActive ? "#f3f0ff" : "transparent",
+                  borderLeft: isActive ? "3px solid #5e35b1" : "3px solid transparent",
+                  paddingLeft: isActive ? "9px" : "12px",
                 }}
               >
-                {link.label}
+                <Icon size={16} color={isActive ? "#5e35b1" : "#aeaeb2"} />
+                <span
+                  className="text-[13px]"
+                  style={{
+                    color: isActive ? "#5e35b1" : "#6e6e73",
+                    fontWeight: isActive ? 600 : 400,
+                  }}
+                >
+                  {link.label}
+                </span>
               </Link>
             );
           })}
         </nav>
 
-        <div className="sidebar-user" style={{ marginTop: "auto", paddingTop: "16px", borderTop: `1px solid ${theme.colors.sidebarBorder}` }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "6px 4px" }}>
-            <div style={{ width: "32px", height: "32px", background: `${theme.colors.accent}25`, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-              <span style={{ fontSize: "11px", color: theme.colors.accent, fontWeight: 600 }}>{initials}</span>
-            </div>
-            <div style={{ overflow: "hidden" }}>
-              <p style={{ fontSize: "12px", color: theme.colors.sidebarTextActive, margin: 0, fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                {name}
-              </p>
-              <p style={{ fontSize: "10px", color: theme.colors.sidebarTextInactive, margin: 0 }}>
-                {apartment || ""}
-              </p>
-            </div>
-          </div>
-          <Link href="/api/auth/signout" style={{ display: "block", padding: "7px 10px", borderRadius: theme.borderRadius.sm, fontSize: "12px", color: theme.colors.sidebarTextInactive, textDecoration: "none", marginTop: "4px" }}>
-            Logga ut
-          </Link>
-        </div>
+        <div className="h-px bg-border my-3 mx-2" />
+
+        <Link
+          href="/profile"
+          className="flex items-center gap-3 px-3 py-2.5 rounded-xl no-underline transition-all duration-150 hover:bg-background"
+          style={{ borderLeft: "3px solid transparent" }}
+        >
+          <Settings size={16} color="#aeaeb2" />
+          <span className="text-[13px] text-text-muted font-normal">Inställningar</span>
+        </Link>
       </div>
 
-      {/* Mobil topbar */}
-      <div
-        className="mobile-nav"
-        style={{
-          display: "none",
-          position: "fixed",
-          top: 0,
-          left: 0,
-          right: 0,
-          zIndex: 100,
-          background: theme.colors.sidebar,
-          padding: "12px 16px",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-          <div style={{ width: "28px", height: "28px", background: theme.colors.accent, borderRadius: "7px", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <div style={{ width: "14px", height: "14px", background: "#fff", borderRadius: "3px" }} />
-          </div>
-          <span style={{ fontSize: "14px", fontWeight: 600, color: theme.colors.sidebarTextActive }}>Fastighet</span>
-        </div>
+     {/* Stadsbild — bara för TENANT */}
+{cityImage && (
+  <div
+    className="relative overflow-hidden mx-3 mb-3 rounded-2xl shrink-0"
+    style={{ height: "160px" }}
+  >
+    <Image
+      src="/sidebar-city.jpg"
+      alt="Stockholm"
+      fill
+      style={{ objectFit: "cover", objectPosition: "center" }}
+      quality={85}
+    />
 
-        {/* Hamburger */}
-        <button
-          onClick={() => setMenuOpen(!menuOpen)}
-          style={{ background: "none", border: "none", cursor: "pointer", padding: "4px", display: "flex", flexDirection: "column", gap: "5px" }}
+    {/* Lila gradient overlay */}
+    <div
+      className="absolute inset-0"
+      style={{ background: "linear-gradient(to bottom, rgba(94,53,177,0.1) 0%, rgba(94,53,177,0.65) 100%)" }}
+    />
+
+    {/* Stjärneffekt */}
+    <div className="absolute top-3 right-4 w-1 h-1 rounded-full" style={{ background: "#f5c400", boxShadow: "0 0 6px #f5c400" }} />
+    <div className="absolute top-5 right-10 w-0.5 h-0.5 rounded-full bg-white opacity-70" />
+    <div className="absolute top-4 right-16 w-1 h-1 rounded-full bg-white opacity-40" />
+
+    {/* Text */}
+    <div className="absolute top-3 left-3 right-3">
+      <p className="text-[12px] font-bold text-white m-0 tracking-[-0.2px]">Stockholm</p>
+      <p className="text-[10px] m-0 mt-0.5" style={{ color: "rgba(255,255,255,0.6)" }}>
+        Fastighetsförvaltning
+      </p>
+    </div>
+  </div>
+)}
+      {/* User */}
+      <div className="px-4 py-4 border-t border-border">
+        <Link href="/profile" className="flex items-center gap-3 no-underline mb-3">
+          <div
+            className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+            style={{ background: "linear-gradient(135deg, #5e35b1, #7c4dff)" }}
+          >
+            <span className="text-[12px] text-white font-bold">
+              {getInitials(name)}
+            </span>
+          </div>
+          <div className="overflow-hidden flex-1 min-w-0">
+            <div className="text-[13px] text-text-primary truncate font-semibold">
+              {name}
+            </div>
+            <div className="text-[10px] text-text-muted">
+              {apartment ? `Lgh ${apartment}` : "Stockholm Stad"}
+            </div>
+          </div>
+        </Link>
+
+        <Link
+          href="/api/auth/signout"
+          className="flex items-center justify-center gap-2 py-2 rounded-xl no-underline transition-all hover:bg-danger-light"
+          style={{ background: "#f5f5f7" }}
         >
-          <div style={{ width: "20px", height: "2px", background: theme.colors.sidebarTextActive, borderRadius: "2px", transition: "all 0.2s", transform: menuOpen ? "rotate(45deg) translateY(7px)" : "none" }} />
-          <div style={{ width: "20px", height: "2px", background: theme.colors.sidebarTextActive, borderRadius: "2px", transition: "all 0.2s", opacity: menuOpen ? 0 : 1 }} />
-          <div style={{ width: "20px", height: "2px", background: theme.colors.sidebarTextActive, borderRadius: "2px", transition: "all 0.2s", transform: menuOpen ? "rotate(-45deg) translateY(-7px)" : "none" }} />
-        </button>
+          <LogOut size={13} color="#6e6e73" />
+          <span className="text-[12px] text-text-muted font-medium">Logga ut</span>
+        </Link>
       </div>
-
-      {/* Mobil dropdown-meny */}
-      {menuOpen && (
-        <div
-          className="mobile-menu"
-          style={{
-            display: "none",
-            position: "fixed",
-            top: "52px",
-            left: 0,
-            right: 0,
-            zIndex: 99,
-            background: theme.colors.sidebar,
-            padding: "8px 16px 16px",
-            borderTop: `1px solid ${theme.colors.sidebarBorder}`,
-          }}
-        >
-          {links.map((link) => {
-            const isActive = pathname === link.href;
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                onClick={() => setMenuOpen(false)}
-                style={{
-                  display: "block",
-                  padding: "10px 12px",
-                  borderRadius: theme.borderRadius.sm,
-                  fontSize: "14px",
-                  fontWeight: isActive ? 500 : 400,
-                  color: isActive ? theme.colors.sidebarTextActive : theme.colors.sidebarTextInactive,
-                  background: isActive ? `${theme.colors.accent}18` : "transparent",
-                  textDecoration: "none",
-                  marginBottom: "2px",
-                }}
-              >
-                {link.label}
-              </Link>
-            );
-          })}
-          <div style={{ borderTop: `1px solid ${theme.colors.sidebarBorder}`, marginTop: "8px", paddingTop: "8px" }}>
-            <Link
-              href="/api/auth/signout"
-              style={{ display: "block", padding: "10px 12px", fontSize: "13px", color: theme.colors.sidebarTextInactive, textDecoration: "none" }}
-            >
-              Logga ut
-            </Link>
-          </div>
-        </div>
-      )}
-    </>
+    </div>
   );
 }

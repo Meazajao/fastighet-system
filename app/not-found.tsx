@@ -1,84 +1,44 @@
 import Link from "next/link";
-import { theme } from "@/lib/theme";
 
 export default function NotFound() {
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        background: theme.colors.background,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "32px",
-      }}
-    >
-      <div style={{ textAlign: "center", maxWidth: "480px" }}>
+    <div className="min-h-screen flex items-center justify-center p-8" style={{ background: "#f8f8fc" }}>
+      <div className="text-center max-w-120">
         <div
-          style={{
-            fontSize: "72px",
-            fontWeight: 700,
-            color: theme.colors.accent,
-            letterSpacing: "-4px",
-            lineHeight: 1,
-            marginBottom: "16px",
-          }}
+          className="w-20 h-20 rounded-3xl flex items-center justify-center mx-auto mb-6"
+          style={{ background: "linear-gradient(135deg, #5e35b1, #7c4dff)", boxShadow: "0 8px 24px rgba(94,53,177,0.3)" }}
+        >
+          <span className="text-[32px] font-bold text-white">?</span>
+        </div>
+
+        <div
+          className="text-[80px] font-bold tracking-[-4px] leading-none mb-4"
+          style={{ background: "linear-gradient(135deg, #5e35b1, #7c4dff)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}
         >
           404
         </div>
 
-        <h1
-          style={{
-            fontSize: "22px",
-            fontWeight: 600,
-            color: theme.colors.textPrimary,
-            margin: "0 0 8px",
-            letterSpacing: "-0.3px",
-          }}
-        >
+        <h1 className="text-[22px] font-bold text-text-primary m-0 mb-3 tracking-[-0.4px]">
           Sidan hittades inte
         </h1>
 
-        <p
-          style={{
-            fontSize: "14px",
-            color: theme.colors.textMuted,
-            margin: "0 0 32px",
-            lineHeight: 1.6,
-          }}
-        >
+        <p className="text-[14px] text-text-muted m-0 mb-8 leading-[1.6]">
           Sidan du letar efter finns inte eller har flyttats. Kontrollera adressen och försök igen.
         </p>
 
-        <div style={{ display: "flex", gap: "12px", justifyContent: "center" }}>
+        <div className="flex gap-3 justify-center">
           <Link
             href="/dashboard"
-            style={{
-              padding: "10px 20px",
-              background: theme.colors.accent,
-              color: "#fff",
-              borderRadius: theme.borderRadius.md,
-              fontSize: "14px",
-              fontWeight: 600,
-              textDecoration: "none",
-            }}
+            className="px-5 py-2.5 rounded-xl text-white text-[13px] font-semibold no-underline hover:opacity-90 transition-opacity"
+            style={{ background: "linear-gradient(135deg, #5e35b1, #7c4dff)", boxShadow: "0 4px 12px rgba(94,53,177,0.3)" }}
           >
-            Gå till startsidan
+            Startsidan
           </Link>
           <Link
             href="/tickets/new"
-            style={{
-              padding: "10px 20px",
-              background: "transparent",
-              border: `1px solid ${theme.colors.border}`,
-              color: theme.colors.textSecondary,
-              borderRadius: theme.borderRadius.md,
-              fontSize: "14px",
-              fontWeight: 600,
-              textDecoration: "none",
-            }}
+            className="px-5 py-2.5 rounded-xl bg-card border border-border text-[13px] text-text-muted font-semibold no-underline hover:bg-background transition-colors"
           >
-            Skapa ärende
+            Nytt ärende
           </Link>
         </div>
       </div>

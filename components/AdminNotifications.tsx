@@ -11,24 +11,21 @@ export default function AdminNotifications() {
   useEffect(() => {
     const socket = io(process.env.NEXT_PUBLIC_SOCKET_URL || "http://localhost:3001");
 
+    socket.emit("join-admin");
+
     socket.on("new-ticket", (ticket: { id: string; title: string; category: string; userName: string }) => {
-      toast(
-        `Nytt ärende inkommet`,
-        {
-          description: `${ticket.userName} — ${ticket.title}`,
-          action: {
-            label: "Visa",
-            onClick: () => router.push(`/admin/tickets/${ticket.id}`),
-          },
-          duration: 8000,
-        }
-      );
+      toast(`Nytt ärende inkommet`, {
+        description: `${ticket.userName} — ${ticket.title}`,
+        action: {
+          label: "Visa",
+          onClick: () => router.push(`/admin/tickets/${ticket.id}`),
+        },
+        duration: 8000,
+      });
       router.refresh();
     });
 
-    return () => {
-      socket.disconnect();
-    };
+    return () => { socket.disconnect(); };
   }, [router]);
 
   return null;

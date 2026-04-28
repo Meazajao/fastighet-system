@@ -1,71 +1,51 @@
-import { theme } from "@/lib/theme";
-import { statusLabel, priorityLabel, statusConfig, priorityConfig, categoryLabel } from "@/lib/utils";
+import { statusLabel, priorityLabel, categoryLabel } from "@/lib/styles";
 
-interface StatusBadgeProps {
-  status: string;
+interface BadgeProps {
+  value: string;
 }
 
-interface PriorityBadgeProps {
-  priority: string;
-}
+export function StatusBadge({ value }: BadgeProps) {
+  const config: Record<string, { color: string; bg: string }> = {
+    OPEN: { color: "#005b99", bg: "#f0f6fc" },
+    IN_PROGRESS: { color: "#5b21b6", bg: "#f5f3ff" },
+    RESOLVED: { color: "#0f6e56", bg: "#e1f5ee" },
+    CLOSED: { color: "#6b7a8d", bg: "#f4f5f7" },
+  };
+  const s = config[value] || config.CLOSED;
 
-interface CategoryBadgeProps {
-  category: string;
-}
-
-export function StatusBadge({ status }: StatusBadgeProps) {
-  const config = statusConfig[status] || statusConfig.CLOSED;
   return (
     <span
-      style={{
-        fontSize: "11px",
-        fontWeight: 600,
-        color: config.color,
-        background: config.bg,
-        padding: "4px 12px",
-        borderRadius: "20px",
-        whiteSpace: "nowrap",
-        flexShrink: 0,
-      }}
+      className="text-[10px] font-medium px-2 py-0.5 whitespace-nowrap"
+      style={{ color: s.color, background: s.bg }}
     >
-      {statusLabel(status)}
+      {statusLabel(value)}
     </span>
   );
 }
 
-export function PriorityBadge({ priority }: PriorityBadgeProps) {
-  const config = priorityConfig[priority] || priorityConfig.MEDIUM;
+export function PriorityBadge({ value }: BadgeProps) {
+  const config: Record<string, { color: string; bg: string }> = {
+    LOW: { color: "#6b7a8d", bg: "#f4f5f7" },
+    MEDIUM: { color: "#005b99", bg: "#f0f6fc" },
+    HIGH: { color: "#c8a000", bg: "#fefce8" },
+    URGENT: { color: "#a32d2d", bg: "#fff0f0" },
+  };
+  const s = config[value] || config.MEDIUM;
+
   return (
     <span
-      style={{
-        fontSize: "10px",
-        fontWeight: 600,
-        color: config.color,
-        background: config.bg,
-        padding: "2px 8px",
-        borderRadius: "4px",
-      }}
+      className="text-[10px] font-medium px-2 py-0.5 whitespace-nowrap"
+      style={{ color: s.color, background: s.bg }}
     >
-      {priorityLabel(priority)}
+      {priorityLabel(value)}
     </span>
   );
 }
 
-export function CategoryBadge({ category }: CategoryBadgeProps) {
+export function CategoryBadge({ value }: BadgeProps) {
   return (
-    <span
-      style={{
-        fontSize: "10px",
-        fontWeight: 600,
-        color: "#475569",
-        background: "#f1f5f9",
-        padding: "2px 8px",
-        borderRadius: "4px",
-        textTransform: "uppercase" as const,
-        letterSpacing: "0.06em",
-      }}
-    >
-      {categoryLabel(category)}
+    <span className="text-[9px] font-medium text-text-muted bg-background px-1.5 py-0.5 uppercase tracking-[0.08em]">
+      {categoryLabel(value)}
     </span>
   );
 }

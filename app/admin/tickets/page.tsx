@@ -5,20 +5,17 @@ import Sidebar from "@/components/Sidebar";
 import MobileNav from "@/components/MobileNav";
 import MobileTopbar from "@/components/MobileTopbar";
 import TicketSearch from "@/components/tickets/TicketSearch";
-import { theme } from "@/lib/theme";
+import Footer from "@/components/ui/Footer";
 import type { Metadata } from "next";
+
 export const metadata: Metadata = { title: "Admin — Alla ärenden" };
 
 export default async function AdminTicketsPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-
   if (!user) redirect("/login");
 
-  const dbUser = await prisma.user.findUnique({
-    where: { email: user.email! },
-  });
-
+  const dbUser = await prisma.user.findUnique({ where: { email: user.email! } });
   if (dbUser?.role !== "ADMIN") redirect("/dashboard");
 
   const tickets = await prisma.ticket.findMany({
@@ -27,22 +24,25 @@ export default async function AdminTicketsPage() {
   });
 
   return (
-    <div className="app-layout" style={{ display: "flex", minHeight: "100vh" }}>
+    <div className="app-layout flex min-h-screen">
       <Sidebar role="ADMIN" name={dbUser.name} apartment={null} />
       <MobileTopbar title="Alla ärenden" name={dbUser.name} />
       <MobileNav role="ADMIN" />
 
-      <main className="main-content" style={{ flex: 1, background: theme.colors.background, padding: "32px" }}>
-        <div style={{ marginBottom: "28px" }}>
-          <h1 style={{ fontSize: "24px", fontWeight: 600, color: theme.colors.textPrimary, margin: "0 0 4px", letterSpacing: "-0.5px" }}>
+      <main className="main-content flex-1 bg-background flex flex-col">
+
+        <div className="bg-card border-b border-border px-8 py-5 shrink-0">
+          <div className="text-[12px] text-text-muted font-medium mb-1">Administration</div>
+          <h1 className="text-[22px] font-bold text-text-primary tracking-[-0.5px] m-0">
             Alla ärenden
           </h1>
-          <p style={{ fontSize: "13px", color: theme.colors.textMuted, margin: 0 }}>
-            {tickets.length} ärenden totalt
-          </p>
         </div>
 
-        <TicketSearch tickets={tickets} />
+        <div className="p-8 flex-1">
+          <TicketSearch tickets={tickets} />
+        </div>
+
+        <Footer />
       </main>
     </div>
   );
