@@ -14,6 +14,18 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = { title: "Översikt" };
 
+interface Ticket {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  priority: string;
+  status: string;
+  createdAt: Date;
+  userId: string;
+  imageUrl: string | null;
+}
+
 const categoryConfig: Record<string, { icon: React.ReactNode; bg: string; color: string }> = {
   VVS: { icon: <Wrench size={20} />, bg: "#f3f0ff", color: "#5e35b1" },
   EL: { icon: <Zap size={20} />, bg: "#fff9e6", color: "#f5a623" },
@@ -149,7 +161,7 @@ const resolvedTickets = tickets.filter((t: { status: string }) => t.status === "
               </div>
 
               <div className="flex flex-col gap-2 md:gap-3">
-                {activeTickets.map((ticket) => {
+              {activeTickets.map((ticket: Ticket) => {
                   const cat = categoryConfig[ticket.category] || categoryConfig.OTHER;
                   const step = progressIndex[ticket.status] ?? 0;
 
@@ -232,7 +244,7 @@ const resolvedTickets = tickets.filter((t: { status: string }) => t.status === "
               </div>
 
               <div className="flex flex-col gap-2 md:gap-3">
-                {resolvedTickets.map((ticket) => {
+              {resolvedTickets.map((ticket: Ticket) => {
                   const cat = categoryConfig[ticket.category] || categoryConfig.OTHER;
                   return (
                     <Link
