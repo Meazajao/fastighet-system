@@ -21,18 +21,17 @@ export default function LoginPage() {
     setError("");
     const supabase = createClient();
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    
-    console.log("Login data:", data);
-    console.log("Login error:", error);
-    console.log("Session:", data?.session);
+
     
     if (error) {
       setError("Felaktiga inloggningsuppgifter. Försök igen.");
       setLoading(false);
       return;
     }
-    router.push("/dashboard");
+    
     router.refresh();
+    await new Promise((resolve) => setTimeout(resolve, 500));
+    router.push("/dashboard");
   }
 
   return (
