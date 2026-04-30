@@ -20,7 +20,12 @@ export default function LoginPage() {
     setLoading(true);
     setError("");
     const supabase = createClient();
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    
+    console.log("Login data:", data);
+    console.log("Login error:", error);
+    console.log("Session:", data?.session);
+    
     if (error) {
       setError("Felaktiga inloggningsuppgifter. Försök igen.");
       setLoading(false);
