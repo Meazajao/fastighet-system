@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Fastighet — Ärendehanteringssystem
 
-## Getting Started
+> Modernt system för felanmälningar och fastighetsunderhåll i Stockholm Stad.
 
-First, run the development server:
+🌐 **Live:** [fastighet-system.vercel.app](https://fastighet-system.vercel.app)
+
+---
+
+## Skärmdumpar
+
+### Login
+![Login](https://github.com/user-attachments/assets/052b6142-3057-4e21-888e-ea4a244b1bfc)
+
+### Hyresgäst — Dashboard
+![Dashboard](https://github.com/user-attachments/assets/d0037e37-51b7-4a55-857d-670928521e5b)
+
+### Admin — Översikt
+![Admin](https://github.com/user-attachments/assets/33f54a36-75b7-4881-97bb-c536855a80f5)
+
+---
+
+## Funktioner
+
+- 🔐 Inloggning & registrering med e-postbekräftelse
+- 📝 Skapa felanmälningar med bild
+- 📊 Följ ärendestatus i realtid
+- 💬 Chatt mellan hyresgäst och admin
+- 🔔 Realtids-notifikationer
+- 👥 Adminpanel med filter och sökning
+
+---
+
+## Tech Stack
+
+- **Next.js 16** — Frontend + API
+- **Supabase** — Auth + Databas
+- **Prisma** — ORM
+- **Socket.io** — Realtid
+- **Tailwind CSS v4** — Styling
+- **Vercel** — Hosting
+- **Render** — Socket.io server
+
+---
+
+## Kom igång
 
 ```bash
+git clone https://github.com/ditt-repo/fastighet-system.git
+cd fastighet-system
+npm install
+cp .env.example .env.local
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Miljövariabler (.env.local)
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_SERVICE_ROLE_KEY=
+DATABASE_URL=
+DIRECT_URL=
+NEXT_PUBLIC_SOCKET_URL=http://localhost:3001
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+RESEND_API_KEY=
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+---
 
-## Learn More
+## Deploy
 
-To learn more about Next.js, take a look at the following resources:
+| Tjänst | Plattform | URL |
+|--------|-----------|-----|
+| Next.js | Vercel | fastighet-system.vercel.app |
+| Socket.io | Render | fastighet-socket.onrender.com |
+| Databas | Supabase | — |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Skapad av
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+**Meaza** · Stockholm · 2026
